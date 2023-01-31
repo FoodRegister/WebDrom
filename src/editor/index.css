@@ -1,27 +1,47 @@
 
+* {
+    padding: 0;
+    margin: 0;
+}
+
 .webdrom.main.editor {
     margin: 0;
     width: 100vw;
     height: 100vh;
 
-    --multiplier: 14px;
+    --multiplier: 7px;
     --multiplier-2: calc(2 * var(--multiplier));
     --multiplier-3: calc(3 * var(--multiplier));
-    --half-multiplier: calc(var(--multiplier) / 2);
+    --multiplier-4: calc(4 * var(--multiplier));
+    --multiplier-5: calc(5 * var(--multiplier));
+    --multiplier-6: calc(6 * var(--multiplier));
+    --multiplier-7: calc(7 * var(--multiplier));
+    --multiplier-1-7: calc(1 / 7 * var(--multiplier));
+    --multiplier-2-7: calc(2 / 7 * var(--multiplier));
+    --multiplier-3-7: calc(3 / 7 * var(--multiplier));
+    --multiplier-4-7: calc(4 / 7 * var(--multiplier));
+    --multiplier-5-7: calc(5 / 7 * var(--multiplier));
+    --multiplier-6-7: calc(6 / 7 * var(--multiplier));
+    --multiplier-7-7: calc(7 / 7 * var(--multiplier));
 
-    --px200: calc(15 * var(--multiplier));
-    --px300: calc(22 * var(--multiplier));
-    --px400: calc(29 * var(--multiplier));
+    --multiplier-half: calc(var(--multiplier) / 2);
+
+    --px200: calc(30 * var(--multiplier));
+    --px300: calc(44 * var(--multiplier));
+    --px400: calc(58 * var(--multiplier));
 
     font-size: var(--multiplier);
 
     --webdrom-background: #1c1c1c;
     --webdrom-contrast-background: #232323;
     --webdrom-lighter-background: #2b2b2b;
+    --webdrom-contrast-light-background: #444444;
+    --webdrom-editor-separate: #505050;
     --webdrom-editor-blue: #4779d0;
     --webdrom-editor-text: #b2b2b2;
+    --webdrom-editor-light-text: #d6d6d6;
 
-    --alert-gap: var(--multiplier-2);
+    --alert-gap: var(--multiplier-4);
 
     background-color: var(--webdrom-background);
     color: var(--webdrom-editor-text);
@@ -58,23 +78,23 @@
 
 .webdrom.main.editor>.alert-main>.alert {
     width: var(--px400);
-    min-height: var(--multiplier-2);
+    min-height: var(--multiplier-4);
     background-color: var(--webdrom-lighter-background);
     position: relative;
     animation: remove-object 500ms ease-in 5000ms forwards;
     display: flex;
-    padding-right: var(--multiplier);
+    padding-right: var(--multiplier-2);
 }
 .webdrom.main.editor>.alert-main>.alert>p {
-    font-size: var(--multiplier);
+    font-size: var(--multiplier-2);
     margin-top: auto;
     margin-bottom: auto;
 }
 .webdrom.main.editor>.alert-main>.alert>.alert-icon {
-    width:  var(--multiplier-2);
-    height: var(--multiplier-2);
-    padding: var(--multiplier);
-    font-size: var(--multiplier-2);
+    width:  var(--multiplier-4);
+    height: var(--multiplier-4);
+    padding: var(--multiplier-2);
+    font-size: var(--multiplier-4);
 }
 .webdrom.main.editor>.alert-main>.alert>.advancement-bar {
     position: absolute;
@@ -85,6 +105,90 @@
     transform: translate(0, 100%);
     animation: advancement-bar 5000ms;
     background-color: var(--webdrom-editor-blue);
+}
+
+.webdrom.main.editor navbar {
+    width: 100%;
+    height: var(--multiplier-3);
+
+    background-color: var(--webdrom-lighter-background);
+    display: flex;
+    gap: var(--multiplier-half);
+    color: var(--webdrom-editor-light-text);
+}
+
+.webdrom.main.editor navbar .nav {
+    cursor: default;
+    transition: all 300ms;
+    position: relative;
+}
+.webdrom.main.editor navbar .nav>p {
+    padding-top:    var(--multiplier-2-7);
+    padding-bottom: var(--multiplier-2-7);
+    font-size: var(--multiplier-2);
+    font-weight: 600;
+    padding-left:  var(--multiplier-half);
+    padding-right: var(--multiplier-half);
+}
+.webdrom.main.editor navbar .nav>div.main-menu {
+    display: none;
+    min-width: var(--px200);
+    position: absolute;
+    bottom: 0; left: 0;
+    transform: translateY(100%);
+}
+.webdrom.main.editor navbar .nav .menu>* {
+    display: block;
+}
+.webdrom.main.editor navbar .nav .menu>span.separator {
+    margin-top:    var(--multiplier);
+    margin-bottom: var(--multiplier);
+    height: var(--multiplier-1-7);
+    background-color: var(--webdrom-editor-separate);
+}
+.webdrom.main.editor navbar .nav .menu>*:not(span.separator):not(.sub-menu):hover {
+    background-color: var(--webdrom-contrast-light-background);
+}
+.webdrom.main.editor navbar .nav .menu>.menu {
+    position: relative;
+}
+.webdrom.main.editor navbar .nav .menu>.menu:not(.sub-menu)::after {
+    font-family: 'Material Icons Outlined';
+    content: "chevron_right";
+    position: absolute;
+    font-size: var(--multiplier-3);
+    right: var(--multiplier-2);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--webdrom-editor-text);
+}
+.webdrom.main.editor navbar .nav .menu>*:not(span.separator)>p {
+    padding-top:    var(--multiplier-4-7);
+    padding-bottom: var(--multiplier-4-7);
+    font-size: var(--multiplier-2);
+    font-weight: 400;
+    padding-left:  var(--multiplier-4);
+    padding-right: var(--multiplier-5);
+}
+.webdrom.main.editor navbar .nav .menu>.sub-menu {
+    display: none;
+    position: absolute;
+    min-width: var(--px200);
+    right: 1px;
+    transform: translateX(100%);
+    top: 0;
+    background-color: var(--webdrom-contrast-background);
+}
+.webdrom.main.editor navbar .nav .menu:hover>.sub-menu {
+    display: block;
+}
+
+.webdrom.main.editor navbar .nav.active {
+    background-color: var(--webdrom-contrast-light-background);
+}
+.webdrom.main.editor navbar .nav.active>div.main-menu {
+    display: block;
+    background-color: var(--webdrom-contrast-background);
 }
 
 @keyframes advancement-bar {

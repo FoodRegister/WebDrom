@@ -1,6 +1,8 @@
 
 class Navbar {
     constructor (project, config) {
+        this.shortcuts = {};
+
         let navbar = project.body.querySelector("navbar")
         if (navbar === null) {
             navbar = document.createElement("navbar")
@@ -10,6 +12,25 @@ class Navbar {
         for (let el of config) {
             navbar.appendChild( this.render(el, true) )
         }
+
+        document.addEventListener("keyup",   (event) => this.shortcutManager(event, true))
+        document.addEventListener("keydown", (event) => this.shortcutManager(event, false))
+    }
+    shortcutManager (event, run_shortcut) {
+        if (event.key.toUpperCase() == "CONTROL") return ;
+        if (event.key.toUpperCase() == "SHIFT")   return ;
+        if (event.key.toUpperCase() == "ALT")     return ;
+
+        let text = event.key.toUpperCase();
+        if (event.shiftKey) text = "Shift+" + text;
+        if (event.  altKey) text = "Alt+"   + text;
+        if (event. ctrlKey) text = "Ctrl+"  + text;
+        
+        let shortcut = this.shortcuts[text];
+        if (shortcut === undefined) return ;
+
+        event.preventDefault();
+        if (run_shortcut) shortcut(event);
     }
 
     render (config, isRoot=true) {
@@ -22,6 +43,8 @@ class Navbar {
             const el = document.createElement("div");
             el.onclick   = config?.action;
             el.innerHTML = `<p>${config.text}</p>`
+            if (config?.shortcut)
+                this.shortcuts[config?.shortcut] = config?.action;
             return el;
         }
 

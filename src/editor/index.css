@@ -136,6 +136,8 @@
     position: absolute;
     bottom: 0; left: 0;
     transform: translateY(100%);
+    padding-top: var(--multiplier);
+    padding-bottom: var(--multiplier);
 }
 .webdrom.main.editor navbar .nav .menu>* {
     display: block;
@@ -148,6 +150,10 @@
 }
 .webdrom.main.editor navbar .nav .menu>*:not(span.separator):not(.sub-menu):hover {
     background-color: var(--webdrom-contrast-light-background);
+    cursor: pointer;
+}
+.webdrom.main.editor navbar .nav .menu>:not(*:not(span.separator):not(.sub-menu)):hover {
+    cursor: default;
 }
 .webdrom.main.editor navbar .nav .menu>.menu {
     position: relative;
@@ -178,6 +184,8 @@
     transform: translateX(100%);
     top: 0;
     background-color: var(--webdrom-contrast-background);
+    padding-top: var(--multiplier);
+    padding-bottom: var(--multiplier);
 }
 .webdrom.main.editor navbar .nav .menu:hover>.sub-menu {
     display: block;

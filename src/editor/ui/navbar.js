@@ -1,4 +1,48 @@
 
+class NavbarElement extends Component {
+    constructor (parent, config, navbar, isRoot=true) {
+        super(parent);
+        console.log(config, isRoot)
+        this.config = config;
+        this.isRoot = isRoot;
+        if      (config.type == "separator") this.renderSeparator(navbar)
+        else if (config.type == "action")    this.renderAction   (navbar);
+        else if (config.type == "menu")      this.renderMenu     (navbar);
+    }
+
+    renderSeparator (navbar) {
+        this.element = createElement("span", {}, "no-tailwind forward-separator", [])
+    }
+    renderAction (navbar) {
+        let props = this.config.action ? { "onclick": this.config.action } : {}
+        this.element = createElement("div", props, "no-tailwind", [
+            createElement("p", {}, "no-tailwind", [ this.config.text ])
+        ])
+
+        if (this.config.shortcut)
+            navbar.shortcuts[this.config.shortcut] = this.config.action;
+    }
+    renderMenu (navbar) {
+        let childs = [];
+
+        for (let child_config of this.config.childs)
+            childs.push (new NavbarElement( this, child_config, navbar, false ).render())
+        
+        this.element = createElement("div", {}, this.isRoot ? "no-tailwind forward-nav" : "no-tailwind forward-menu", [
+            createElement("p", {}, "no-tailwind", [ this.config.text ]),
+            createElement(
+                "div", {}, 
+                `no-tailwind forward-menu ${this.isRoot ? "forward-main-menu" : "forward-sub-menu"}`,
+                childs
+            )
+        ])
+    }
+
+    _render () {
+        return this.element;
+    }
+}
+
 class Navbar {
     constructor (project, config) {
         this.shortcuts = {};
@@ -34,31 +78,6 @@ class Navbar {
     }
 
     render (config, isRoot=true) {
-        if (config.type === "separator") {
-            const el = document.createElement("span");
-            el.className = "separator";
-            return el;
-        }
-        if (config.type === "action") {
-            const el = document.createElement("div");
-            el.onclick   = config?.action;
-            el.innerHTML = `<p>${config.text}</p>`
-            if (config?.shortcut)
-                this.shortcuts[config?.shortcut] = config?.action;
-            return el;
-        }
-
-        const root = document.createElement("div");
-        root.classList = isRoot ? "nav" : "menu";
-        root.innerHTML = `<p>${config.text}</p>`
-        const el = document.createElement("div");
-        el.classList = `menu ${isRoot ? "main-menu" : "sub-menu"}`
-        root.appendChild(el);
-
-        for (let next_config of config.childs) {
-            el.appendChild(this.render(next_config, false));
-        }
-        
-        return root;
+        return new NavbarElement(this, config, this, isRoot).render();
     }
 }

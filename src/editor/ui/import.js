@@ -1,6 +1,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     async function handleAddedNode (element) {
+        for (let child of element.childNodes) handleAddedNode(child);
         if (element.localName !== "import") return ;
         
         let uri = element.attributes["href"].nodeValue

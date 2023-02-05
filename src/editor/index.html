@@ -7,21 +7,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Drom</title>
 
-    <script src="/src/editor/index.js"></script>
-
-    <script src="/src/editor/io/project/input.js"></script>
-
-    <script src="/src/editor/ui/alert.js"></script>
-    <script src="/src/editor/ui/active.js"></script>
-    <script src="/src/editor/ui/import.js"></script>
-    <script src="/src/editor/ui/navbar.js"></script>
-
-    <script src="/src/assets/ejs.js"></script>
-
     <link rel="stylesheet" href="/src/editor/index.css">
+
+    <!-- Molyb -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+      rel="stylesheet">
+
+    <script defer src="/src/molyb/src/framework.js"></script>
+    <script defer src="/src/molyb/src/tailwind.js"></script>
+
+    <script defer src="/src/editor/index.js"></script>
+
+    <script defer src="/src/editor/io/project/input.js"></script>
+
+    <script defer src="/src/editor/ui/alert.js"></script>
+    <script defer src="/src/editor/ui/active.js"></script>
+    <script defer src="/src/editor/ui/import.js"></script>
+    <script defer src="/src/editor/ui/navbar.js"></script>
+
+    <script defer src="/src/assets/ejs.js"></script>
+
+    <style id="tailwind-css">
+      body {
+          margin: 0;
+          font-family: 'roboto';
+          overflow-x: hidden;
+      }
+      a {
+          text-decoration: none;
+      }
+
+      .tailwind:not(.no-tailwind) {
+          --p: 0px;
+          --py: var(--p);
+          --px: var(--p);
+          --pt: var(--py);
+          --pb: var(--py);
+          --pl: var(--px);
+          --pr: var(--px);
+          --w: auto;
+          --h: auto;
+          padding-top:    var(--pt) !important;
+          padding-bottom: var(--pb) !important;
+          padding-left:   var(--pl) !important;
+          padding-right:  var(--pr) !important;
+          --duration: 0ms;
+
+          width:  calc(var(--w) - var(--pl) - var(--pr)) !important;
+          height: calc(var(--h) - var(--pb) - var(--pt)) !important;
+
+          transition-duration: var(--duration);
+
+          font-family: 'Inter';
+      }
+      p.tailwind:not(.no-tailwind) {
+          padding: 0;
+          margin:  0;
+      }
+      input.tailwind:not(.no-tailwind) {
+          --w: 100%;
+          border: none;
+          outline: none;
+      }
+      button.tailwind:not(.no-tailwind) {
+          border: none;
+          background: none;
+      }
+
+  </style>
 </head>
 <body class="webdrom main editor">
-    <import href="/src/assets/webdrom_logo.svg"></import>
+    <import href="/src/editor/templates/base.html"></import>
 
     <div class="alert-main">
         

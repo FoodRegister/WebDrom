@@ -56,14 +56,27 @@
     fill: var(--webdrom-contrast-background);
 }
 
-.webdrom.main.editor .center-svg {
+.webdrom.main.editor .logo-svg {
     aspect-ratio: 1;
     width:  var(--px300);
     height: var(--px300);
+}
+
+.webdrom.main.editor .center-div {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+}
+.webdrom.main.editor .center-w {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.webdrom.main.editor fieldset {
+    font-size: var(--multiplier-3);
+    border: 0;
 }
 
 .webdrom.main.editor>.alert-main {
@@ -244,6 +257,6 @@
     src: url(/src/assets/fonts/Inter-VarFont.ttf);
 }
 
-body {
+* {
     font-family: Inter;
 }

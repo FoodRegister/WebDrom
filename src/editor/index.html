@@ -76,6 +76,18 @@
   </style>
 </head>
 <body class="webdrom main editor">
-    
+    <script defer>
+        document.addEventListener("DOMContentLoaded", () => {
+            pr = new Project(document.body); 
+            cl = console.log; 
+            nv = new Navbar(pr, [ { "type": "menu", "text": "Server", "childs": [
+                { "type": "action", "action": cl, "text": "Open" },
+                { "type": "separator" },
+                { "type": "menu", "text": "Open recent", "childs": [
+                    { "type": "action", "action": cl, "text": "Nothing recent" }
+                ] }
+            ] } ])
+        })
+    </script>
 </body>
 </html>

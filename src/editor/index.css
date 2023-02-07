@@ -26,7 +26,7 @@
     --multiplier-6-7: calc(6 / 7 * var(--multiplier));
     --multiplier-7-7: calc(7 / 7 * var(--multiplier));
 
-    --multiplier-half: calc(var(--multiplier) / 2);
+    --multiplier-half: 4px;
 
     --px200: calc(30 * var(--multiplier));
     --px300: calc(44 * var(--multiplier));
@@ -123,6 +123,7 @@
 }
 
 .webdrom.main.editor navbar {
+    z-index: 10;
     width: 100%;
     height: var(--multiplier-3);
 
@@ -151,15 +152,15 @@
     position: absolute;
     bottom: 0; left: 0;
     transform: translateY(100%);
-    padding-top: var(--multiplier);
-    padding-bottom: var(--multiplier);
+    padding-top: var(--multiplier-half);
+    padding-bottom: var(--multiplier-half);
 }
 .webdrom.main.editor navbar .nav .menu>* {
     display: block;
 }
 .webdrom.main.editor navbar .nav .menu>span.separator {
-    margin-top:    var(--multiplier);
-    margin-bottom: var(--multiplier);
+    margin-top:    var(--multiplier-half);
+    margin-bottom: var(--multiplier-half);
     height: var(--multiplier-1-7);
     background-color: var(--webdrom-editor-separate);
 }
@@ -196,11 +197,11 @@
     position: absolute;
     min-width: var(--px200);
     right: 1px;
-    transform: translateX(100%);
+    transform: translateX(100%) translateY(calc(-1 * var(--multiplier-half)));
     top: 0;
     background-color: var(--webdrom-contrast-background);
-    padding-top: var(--multiplier);
-    padding-bottom: var(--multiplier);
+    padding-top: var(--multiplier-half);
+    padding-bottom: var(--multiplier-half);
 }
 .webdrom.main.editor navbar .nav .menu:hover>.sub-menu {
     display: block;

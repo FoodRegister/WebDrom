@@ -17,7 +17,7 @@ class HomeProjectPage extends ProjectPage {
 
     _first_render () {
         this.element = createElement("div", {}, "h-full", [
-            createElement("div", {}, "center w-min h-min", [
+            createElement("div", {}, "center h-min", [
                 createElement("import", { href: "/src/assets/webdrom_logo.svg" }, "", [])
             ])
         ])

@@ -172,7 +172,7 @@ class _Tailwind {
         for (let str of string.split(" "))
             if (this.is_forward(str))
                 classes.push(this.forward_transform(str));
-        console.log(classes)
+        
         return classes;
     }
 

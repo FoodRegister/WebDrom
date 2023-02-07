@@ -2,7 +2,7 @@
 class NavbarElement extends Component {
     constructor (parent, config, navbar, isRoot=true) {
         super(parent);
-        console.log(config, isRoot)
+        
         this.config = config;
         this.isRoot = isRoot;
         if      (config.type == "separator") this.renderSeparator(navbar)
@@ -50,7 +50,7 @@ class Navbar {
         let navbar = project.body.querySelector("navbar")
         if (navbar === null) {
             navbar = document.createElement("navbar")
-            project.body.appendChild(navbar)
+            project.body.insertBefore(navbar, project.body.firstChild);
         }
     
         for (let el of config) {

@@ -16,23 +16,69 @@ class AlertArray {
         this.project = project;
         this.array   = array;
         
+        this.alert_manager = this.project.alert_manager;
+
         for (let key of Object.keys(this.array)) {
             this[key] = (  ) => { this.make(this.array[key]) }
         }
     }
 
     make (parameters) {
-        const [ icon_cls, icon_status ] = WEBDROM__ALERT__STATUS_ARRAY[ parameters[0] ]
-        const text = parameters[1]
-        const html = ejs.render( alert_template, { icon_cls, icon_status, alert_text: text } )
-
-        const element     = document.createElement("div")
-        document.querySelector(".alert-main").appendChild(element);
-        element.innerHTML = html;
-        element.className = "alert"
-
-        setTimeout(() => {
-            document.querySelector(".alert-main").removeChild(element);
-        }, 5500);
+        this.alert_manager.addAlert( parameters );
     }
 };
+
+class AlertObject extends Component {
+    constructor (parent, parameters) {
+        super(parent);
+
+        this._first_render(parameters);
+    }
+
+    _first_render(parameters) {
+        const [ icon_cls, icon_status ] = WEBDROM__ALERT__STATUS_ARRAY[ parameters[0] ]
+        const text = parameters[1]
+
+        this.element = createElement("div", {}, "no-tailwind forward-alert", [
+            createElement("div", {}, 
+                          `no-tailwind forward-material-icons-outlined forward-alert-icon forward-${icon_cls}`, 
+                          [ icon_status ]),
+            createElement("p", {}, "no-tailwind ", [ text ]),
+            createElement("span", {}, "no-tailwind forward-advancement-bar", [])
+        ])
+    }
+    _render () {
+        return this.element;
+    }
+}
+
+class AlertComponent extends Component {
+    constructor (parent) {
+        super (parent);
+
+        this.__alerts = [];
+        this.element  = createElement("div", {}, "forward-alert-main", []);
+    }
+
+    addAlert (parameters) {
+        let alert = new AlertObject( undefined, parameters );
+        let component = alert.render();
+
+        this.element.appendChild(component);
+
+        setTimeout(() => {
+            this.element.removeChild(component);
+        }, 5500)
+    }
+
+    _render () {
+        return this.element;
+    }
+}
+
+document.addEventListener("WebDrom.CreateProject", (event) => {
+    const project = event.project;
+
+    project.alert_manager = new AlertComponent( undefined );
+    project.body.appendChild( project.alert_manager.render() )
+})

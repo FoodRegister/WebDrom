@@ -92,13 +92,11 @@ class _Tailwind {
 
     forward = [ "material-icons-outlined", "no-tailwind" ]
     is_forward (cls) {
-        console.log(cls, cls.startsWith("forward-"))
         return cls.startsWith("forward-") 
             || this.forward.includes(cls) 
             || (cls.startsWith("group-") && !cls.includes(":"))
     }
     forward_transform (cls) {
-        console.log(cls, cls.startsWith("forward-"), cls.substring(8))
         if (cls.startsWith("forward-")) return cls.substring(8)
         return cls;
     }
@@ -135,7 +133,6 @@ class _Tailwind {
         this._cache[string] = className;
 
         const { array, forward } = this._compile(string)
-        console.log(array, forward)
         const dict_ = {}
 
         for (let [attr, style] of array) {

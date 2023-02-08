@@ -89,6 +89,11 @@ class MSplitter extends Component {
 
         this.last_size = 0;
     }
+    computeLastSize () {
+        this.last_size = 0;
+        for (let size of this.sizes)
+            this.last_size += size;
+    }
     startDrag () {
         this.__sizes = [];
         for (let i of this.sizes) this.__sizes.push(i);
@@ -125,9 +130,8 @@ class MSplitter extends Component {
         event = event[0];
         let size = event.contentRect[this.field];
 
+        this.computeLastSize();
         let delta_size = size - this.last_size;
-        
-        this.last_size = size;
 
         if (delta_size >= 0) {
             this.sizes[ this.sizes.length - 1 ] += delta_size;

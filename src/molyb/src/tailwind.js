@@ -52,7 +52,13 @@ class _Tailwind {
         this._class_cache = {};
         this.shortcuts = {}
 
+        this.unique_group_count = 0;
+
         this.fetch_config();
+    }
+
+    createGroup () {
+        return `group-RNG${this.unique_group_count++}-${ Math.random().toString().substring( 2 ) }`
     }
 
     async await_for_tailwind () {
@@ -129,6 +135,7 @@ class _Tailwind {
         }
 
         const className = `tailwind-${this.next_tailwind_class_id()}`
+        string = string.split("\n").join(" ");
         string.split(" ");
         this._cache[string] = className;
 
@@ -181,6 +188,12 @@ class _Tailwind {
         for (let attr of attributes) {
             if (attr.startsWith("group-"))
                 type = `.${attr.split(".").join(":")} ${type}`
+            if (attr.startsWith("cls-"))
+                type = `.${attr.substr(4)} ${type}`
+            if (attr.startsWith("cls>"))
+                type = `.${attr.substr(4)}>${type}`
+            if (attr.startsWith("cls."))
+                type = `.${attr.substr(4)}${type}`
         }
         if (attributes.includes("dark"))  type = `body.dark ${type}`
         if (attributes.includes("hover")) type += ":hover"
@@ -295,7 +308,7 @@ class _Tailwind {
     }
     to_custom(style) {
         if (! this.custom_regex.test(style)) return undefined;
-
+        
         return style.substring(1, style.length - 1).split("_").join(" ");
     }
     to_px (style) {
@@ -369,6 +382,7 @@ class _Tailwind {
 
         const px = this.to_px(style)
         const custom = this.to_custom(style);
+        console.log(style, custom)
         
         if (px !== undefined && !isNaN(px)) return `${padding}: ${px}px;`;
         if (custom) return `${padding}: ${custom};`;
@@ -571,7 +585,9 @@ class _Tailwind {
         if (!isNaN(size)) return `border-width: ${size}px;`;
 
         const color = this.to_color(style);
+        const variable = this.to_var(style);
         if (color) return `border: solid; border-color: ${color};`
+        if (variable) return `border: solid; border-color: ${variable};`
 
         return `border: ${style};`
     }

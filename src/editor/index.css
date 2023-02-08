@@ -2,6 +2,16 @@
 * {
     padding: 0;
     margin: 0;
+    --w: 0; --h: 0; --duration: 0; --p: 0px;
+
+    --py: var(--p);
+    --px: var(--p);
+    --pt: var(--py);
+    --pb: var(--py);
+    --pl: var(--px);
+    --pr: var(--px);
+
+    font-family: 'Inter';
 }
 
 .webdrom.main.editor {
@@ -34,12 +44,16 @@
 
     font-size: var(--multiplier);
 
-    --webdrom-background: #1c1c1c;
-    --webdrom-contrast-background: #232323;
-    --webdrom-lighter-background: #2b2b2b;
-    --webdrom-contrast-light-background: #444444;
+    --webdrom-navbar-background: #1a1a1a;
+    --webdrom-background: #1e1e1e;
+    --webdrom-contrast-background: #2c2c2c;
+    --webdrom-light-background: #252526;
+    --webdrom-lighter-background: #282828;
+    --webdrom-contrast-light-background: #2b2b2b;
+    --webdrom-contrast-lighter-background: #37373d;
     --webdrom-editor-separate: #505050;
-    --webdrom-editor-blue: #4779d0;
+    --webdrom-editor-blue: #007acc;
+    --webdrom-editor-blue-light: #04395e;
     --webdrom-editor-text: #b2b2b2;
     --webdrom-editor-light-text: #d6d6d6;
 
@@ -199,7 +213,7 @@
     right: 1px;
     transform: translateX(100%) translateY(calc(-1 * var(--multiplier-half)));
     top: 0;
-    background-color: var(--webdrom-contrast-background);
+    background-color: var(--webdrom-navbar-background);
     padding-top: var(--multiplier-half);
     padding-bottom: var(--multiplier-half);
 }
@@ -212,7 +226,7 @@
 }
 .webdrom.main.editor navbar .nav.active>div.main-menu {
     display: block;
-    background-color: var(--webdrom-contrast-background);
+    background-color: var(--webdrom-navbar-background);
 }
 
 @keyframes advancement-bar {
@@ -274,28 +288,15 @@ a {
 }
 
 .tailwind:not(.no-tailwind) {
-    --p: 0px;
-    --py: var(--p);
-    --px: var(--p);
-    --pt: var(--py);
-    --pb: var(--py);
-    --pl: var(--px);
-    --pr: var(--px);
-    padding-top:    var(--pt) !important;
-    padding-bottom: var(--pb) !important;
-    padding-left:   var(--pl) !important;
-    padding-right:  var(--pr) !important;
+    padding-top:    var(--pt);
+    padding-bottom: var(--pb);
+    padding-left:   var(--pl);
+    padding-right:  var(--pr);
     
-    width:  calc(var(--w) - var(--pl) - var(--pr)) !important;
-    height: calc(var(--h) - var(--pb) - var(--pt)) !important;
+    width:  calc(var(--w) - var(--pl) - var(--pr));
+    height: calc(var(--h) - var(--pb) - var(--pt));
 
     transition-duration: var(--duration);
-
-    font-family: 'Inter';
-}
-p.tailwind:not(.no-tailwind) {
-    padding: 0;
-    margin:  0;
 }
 input.tailwind:not(.no-tailwind) {
     --w: 100%;

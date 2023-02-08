@@ -16,17 +16,14 @@ class HomeProjectPage extends ProjectPage {
     }
 
     _first_render () {
-        let splitter = new MSplitter(
-            this, 
-            "horizontal",
-            undefined, // default css config
-            createElement("div", {}, "", [
-                createElement("import", { href: "/src/assets/webdrom_logo.svg" }, "", [])
+        let tree     = new MTree(this);
+        let splitter = new MSplitter (this, "horizontal", undefined, 
+            createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
+                tree.render()
             ]),
-            createElement("div", {}, "", [
-                createElement("import", { href: "/src/assets/webdrom_logo.svg" }, "", [])
-            ])
+            createElement("div", {}, "", [])
         )
+        splitter.sizes = [ 400, 0 ];
         this.element = createElement("div", {}, "h-full", [
             splitter.render()
         ])

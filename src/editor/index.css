@@ -267,7 +267,7 @@
 body {
     margin: 0;
     font-family: 'roboto';
-    overflow-x: hidden;
+    overflow: hidden;
 }
 a {
     text-decoration: none;
@@ -305,4 +305,10 @@ input.tailwind:not(.no-tailwind) {
 button.tailwind:not(.no-tailwind) {
     border: none;
     background: none;
+}
+
+.msplitter-separator {
+    --duration: 300ms;
+    transition: background-color 300ms 75ms;
+    z-index: 5;
 }

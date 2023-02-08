@@ -18,10 +18,12 @@ class HomeProjectPage extends ProjectPage {
     _first_render () {
         let splitter = new MSplitter(
             this, 
-            createElement("div", {}, "h-min", [
+            "horizontal",
+            undefined, // default css config
+            createElement("div", {}, "", [
                 createElement("import", { href: "/src/assets/webdrom_logo.svg" }, "", [])
             ]),
-            createElement("div", {}, "h-min", [
+            createElement("div", {}, "", [
                 createElement("import", { href: "/src/assets/webdrom_logo.svg" }, "", [])
             ])
         )

@@ -308,13 +308,20 @@ class _Tailwind {
 
         return style;
     }
+    to_var (style) {
+        if (style.length == 0 || style[0] != "V") return undefined;
+
+        return `var(--${style.substring(1)})`
+    }
 
     _tailwind_bg(style) {
         const color = this.to_color(style);
         const custom = this.to_custom(style);
+        const variable = this.to_var(style)
 
         if (color) return `background-color: ${color};`
         if (custom) return `background: ${custom};`
+        if (variable) return `background-color: ${variable};`
 
         console.log(`Unhandled style for bg property "${style}"`)
     }

@@ -606,6 +606,9 @@ class _Tailwind {
     _tailwind_whitespace (style) {
         if (style == "nowrap") return "white-space: nowrap;"
     }
+    _tailwind_uppercase (style) {
+        return "text-transform: uppercase;"
+    }
 }
 
 const Tailwind = new _Tailwind();

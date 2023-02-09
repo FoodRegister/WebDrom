@@ -73,8 +73,7 @@ class MSplitter extends Component {
         }
 
         this.components = components;
-        if (this.components.size > 2) throw "MSplitter doesn't support more than 2 components right now"
-
+        
         this.sizes     = [];
         this.min_sizes = [];
         this.collapse  = [];

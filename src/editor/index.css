@@ -54,6 +54,7 @@
     --webdrom-editor-separate: #505050;
     --webdrom-editor-blue: #007acc;
     --webdrom-editor-blue-light: #04395e;
+    --webdrom-editor-icon: #929292;
     --webdrom-editor-text: #b2b2b2;
     --webdrom-editor-light-text: #d6d6d6;
 
@@ -267,6 +268,7 @@
     direction: ltr;
     -moz-font-feature-settings: 'liga';
     -moz-osx-font-smoothing: grayscale;
+    color: var(--webdrom-editor-icon);
 }
 
 @font-face {

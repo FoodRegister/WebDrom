@@ -1,6 +1,6 @@
 
 class __MTree_Object extends Component {
-    constructor (parent, config, depth=1) {
+    constructor (parent, config, depth=3) {
         super(parent);
 
         this.group_cls = Tailwind.createGroup();
@@ -57,7 +57,7 @@ class __MTree_Object extends Component {
             createElement("div", { onclick: () => this.toggle_tree() }, 
                 this._create_div_cls(), [
                 this.icon_element,
-                createElement("p", {}, "text-sm font-500 pl-2", [ this.config.text ])
+                createElement("p", {}, "text-base font-500 pl-2", [ this.config.text ])
             ]),
             this.child_element
         ])

@@ -16,7 +16,7 @@ class HomeProjectPage extends ProjectPage {
     }
 
     _first_render () {
-        let tree     = new MTree(this);
+        let tree     = new MExplorer (this, { "text": "Explorer" });
         let splitter = new MSplitter (this, "horizontal", undefined, 
             createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
                 tree.render()

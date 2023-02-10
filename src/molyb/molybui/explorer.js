@@ -6,6 +6,8 @@
 const EXPLORER_TSIZE = 33;
 const EXPLORER_RSIZE = 32;
 
+const EXPLORER_TRANSITION_SPEED = 1000; // N pixels / second
+
 class __MExplorer_Element extends Component {
     constructor (parent, config, index) {
         super(parent);
@@ -46,15 +48,17 @@ class __MExplorer_Element extends Component {
 
     toggle () {
         this.opened = !this.opened;
-        this.render(false);
 
         this.inner_size = this.index == 0 ? EXPLORER_RSIZE : EXPLORER_TSIZE;
 
-        this.parent.splitter.requestSize ( 
+        let duration = this.parent.splitter.requestSize ( 
             this.index,
             this.opened ? 200 : this.inner_size,
             this.opened ? 200 : this.inner_size
         )
+
+        if (this.opened) this.render(false)
+        else setTimeout(() => this.render(false), duration)
     }
     _render () {
         this.icon_opened_element.innerText = this.opened ? "expand_more" : "chevron_right";
@@ -69,7 +73,39 @@ class __MExplorer_Element extends Component {
 class __MExplorer_Splitter extends MSplitter {
     compute_start_transform_separator () { return 0; }
 
+    prepareTransition () {
+        this.transition_start = []
+        if (this.id_transition === undefined)
+            this.id_transition    = 0;
+        
+        this.id_transition ++;
+        for (let size of this.sizes) this.transition_start.push (size);
+    }
+    setupTransition () {
+        let max_duration  = 0;
+        let id_transition = this.id_transition;
+        for (let idx = 0; idx < this.sizes.length; idx ++) {
+            let delta    = Math.abs(this.sizes[idx] - this.transition_start[idx])
+            let duration = delta / EXPLORER_TRANSITION_SPEED * 1000;
+
+            this.components[idx].style.transition = `height ${duration}ms 0ms, max-height ${duration}ms 0ms`
+
+            max_duration = Math.max(max_duration, duration);
+        }
+
+        setTimeout(() => {
+            if (this.id_transition != id_transition) return ;
+
+            for (let idx = 0; idx < this.sizes.length; idx ++)
+                this.components[idx].style.transition = ""
+        }, max_duration)
+
+        return max_duration;
+    }
+
     requestSize (index, size, min_size) {
+        this.prepareTransition ();
+
         if (size < min_size) size = min_size;
         this.min_sizes[index] = min_size;
 
@@ -94,6 +130,7 @@ class __MExplorer_Splitter extends MSplitter {
         }
 
         this.apply_sizes();
+        return this.setupTransition();
     }
 
     apply_sizes () {

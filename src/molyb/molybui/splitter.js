@@ -1,7 +1,6 @@
 
 class __MSplitter_Separator extends Component {
     constructor (parent, cls_separator, cls_active, idx) {
-        console.log(cls_separator, cls_active)
         super(parent);
 
         this.cls_separator = cls_separator;
@@ -46,7 +45,6 @@ class __MSplitter_Separator extends Component {
     dragMouseMove (event) {
         this.position = [ event.clientX, event.clientY ];
         let delta = [ event.clientX - this.start[0], event.clientY - this.start[1] ];
-        console.log(event, delta)
         
         this.parent.drag( this.idx, delta );
     }

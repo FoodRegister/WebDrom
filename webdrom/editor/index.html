@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Drom</title>
+
+    <link rel="stylesheet" href="/webdrom/editor/index.css">
+
+    <!-- Molyb -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+      rel="stylesheet">
+
+    <script defer src="/webdrom/molyb/src/framework.js"></script>
+    <script defer src="/webdrom/molyb/src/tailwind.js"></script>
+    <script defer src="/webdrom/molyb/molybui/splitter.js"></script>
+    <script defer src="/webdrom/molyb/molybui/tree.js"></script>
+    <script defer src="/webdrom/molyb/molybui/explorer.js"></script>
+
+    <script defer src="/webdrom/editor/index.js"></script>
+
+    <script defer src="/webdrom/editor/io/project/input.js"></script>
+
+    <script defer src="/webdrom/editor/ui/alert.js"></script>
+    <script defer src="/webdrom/editor/ui/active.js"></script>
+    <script defer src="/webdrom/editor/ui/import.js"></script>
+    <script defer src="/webdrom/editor/ui/navbar.js"></script>
+
+    <script defer src="/webdrom/assets/ejs.js"></script>
+
+    <style id="tailwind-css">
+      
+
+  </style>
+</head>
+<body class="webdrom main editor">
+    <script defer>
+        document.addEventListener("DOMContentLoaded", () => {
+            pr = new Project(document.body); 
+            cl = console.log; 
+            nv = new Navbar(pr, [ { "type": "menu", "text": "Server", "childs": [
+                { "type": "action", "action": cl, "text": "Open" },
+                { "type": "separator" },
+                { "type": "menu", "text": "Open recent", "childs": [
+                    { "type": "action", "action": cl, "text": "Nothing recent" }
+                ] }
+            ] }, { "type": "menu", "text": "Edit", "childs": [
+                { "type": "action", "action": cl, "text": "Zoom In", 'shortcut': "Ctrl+61" },
+                { "type": "action", "action": cl, "text": "Zoom Out", 'shortcut': "Ctrl+-" },
+            ] } ])
+        })
+    </script>
+</body>
+</html>

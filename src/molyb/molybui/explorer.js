@@ -29,7 +29,10 @@ class __MExplorer_Element extends Component {
         const functions_el = Tailwind.bindClass(this.element_container, "hidden")
         this.disable_el = functions_el[0]; this.enable_el = functions_el[1];
 
-        this.ui = createElement("div", {}, "forward-explorer-transition", [
+        let pixel_taken  = this.index == 0 ? EXPLORER_RSIZE : EXPLORER_TSIZE;
+        let height_allow = `calc(100%_-_${pixel_taken}px)`
+
+        this.ui = createElement("div", {}, "", [
             createElement("div", {}, this.index != 0 ? "h-[1px] w-full bg-Vwebdrom-contrast-lighter-background" : "", []),
             createElement("div", { onclick: () => { this.toggle() } }, `flex p-[4px] px-[3px] 
                                       cursor-pointer hover:bg-Vwebdrom-contrast-background
@@ -42,7 +45,9 @@ class __MExplorer_Element extends Component {
                 this.icon_opened_element,
                 createElement("div", {}, "text-base uppercase pl-2 font-600", [ this.config.text ])
             ]),
-            this.element_container
+            createElement("div", {}, `w-full h-[${height_allow}] max-h-[${height_allow}] overflow-scroll`, [
+                this.element_container
+            ])
         ])
     }
 

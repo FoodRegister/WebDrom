@@ -36,13 +36,13 @@ class __MTree_Object extends Component {
         return createElement("p", {}, "text-base font-400 pl-2", [ this.getText() ]);
     }
     makeBubble () {
-        this.config.bubble = {}
-        this.config.bubble.color   = "bg-blue-400"
-        this.config.bubble.opacity = 0.3
-        if (this.config?.bubble?.color   === undefined) return ""
-        if (this.config?.bubble?.opacity === undefined) return ""
+        if (this.config?.bubble?.color   === undefined) return createElement("div", {}, "", [])
+        if (this.config?.bubble?.opacity === undefined) return createElement("div", {}, "", [])
 
-        return createElement("div", {}, `h-3 w-3 rounded-12 opacity-${this.config.bubble.opacity} ${this.config?.bubble?.color} center-h`, [])
+        let element = createElement("div", {}, `h-3 w-3 rounded-12 text-center font-800 opacity-${this.config.bubble.opacity} ${this.config?.bubble?.color} center-h`, this.config?.bubble?.text ? [ this.config.bubble.text ] : [])
+        element.style.fontSize = "12px";
+
+        return element
     }
 
     _create_div_cls () {

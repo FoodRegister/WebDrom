@@ -33,10 +33,20 @@ class __MTree_Object extends Component {
     makeText () {
         return createElement("p", {}, "text-base font-400 pl-2", [ this.getText() ]);
     }
+    makeBubble () {
+        this.config.bubble = {}
+        this.config.bubble.color   = "bg-blue-400"
+        this.config.bubble.opacity = 0.3
+        if (this.config?.bubble?.color   === undefined) return ""
+        if (this.config?.bubble?.opacity === undefined) return ""
+
+        return createElement("div", {}, `h-3 w-3 rounded-12 opacity-${this.config.bubble.opacity} ${this.config?.bubble?.color} center-h`, [])
+    }
 
     _create_div_cls () {
         return `flex
                 pl-${this.visual_depth} ${this.group_cls}
+                pr-6
                 py-[5px]
                 cursor-pointer
 
@@ -46,6 +56,7 @@ class __MTree_Object extends Component {
                 cls.active:border-Vwebdrom-editor-blue 
                 cls.active:border-[1px]
                 cls.active:pl-[${this.visual_depth * 4 - 1}px]
+                cls.active:pr-[23px]
                 cls.active:py-1`
     }
     _first_render () {
@@ -63,12 +74,15 @@ class __MTree_Object extends Component {
         this.icon_element = createElement("div", {}, "", [])
 
         this.text_element = createElement("div", {}, "", [])
+        this.bubb_element = createElement("div", {}, "", [])
 
         this.element = createElement("div", {}, "", [
             createElement("div", { onclick: () => this.toggle_tree() }, 
                 this._create_div_cls(), [
                 this.icon_element,
-                this.text_element
+                this.text_element,
+                createElement("div", [], "flex-1", []),
+                this.bubb_element
             ]),
             this.child_element
         ])
@@ -79,6 +93,9 @@ class __MTree_Object extends Component {
         
         this.text_element.replaceChildren();
         this.text_element.appendChild(this.makeText());
+
+        this.bubb_element.replaceChildren();
+        this.bubb_element.appendChild(this.makeBubble());
 
         if (this.open_status) this.child_enable();
         else this.child_disable();

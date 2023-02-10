@@ -112,13 +112,25 @@ class MSplitter extends Component {
         let potential_j = this.sizes[jdx] - this.min_sizes[jdx]
 
         let v_delta = delta;
-        if (delta < 0) delta = Math.max( delta, - potential_i)
-        else delta = Math.min( delta, potential_j )
+        if (this.__sizes[idx] == 0 || delta < 0) {
+            delta = Math.max( delta, - potential_i)
+        }
+        if (this.__sizes[jdx] == 0 || delta > 0) {
+            delta = Math.min( delta, potential_j );
+        }
+
+        if (this.sizes[idx] + v_delta <= 60 && this.collapse[idx]) {
+            delta = - this.sizes[idx];
+        } else if (this.sizes[jdx] - v_delta <= 60 && this.collapse[jdx]) {
+            delta = this.sizes[jdx];
+        }
 
         this.sizes[idx] += delta;
         this.sizes[jdx] -= delta;
         
         let d_delta = v_delta - delta;
+
+        if (v_delta * delta < 0) return ;
         if (!this.transfer_delta || d_delta == 0) return ;
     
         if (d_delta < 0) this.dragForward( idx - 1, jdx, d_delta )

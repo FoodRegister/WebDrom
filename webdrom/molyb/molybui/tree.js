@@ -16,6 +16,8 @@ class __MTree_Object extends Component {
     toggle_tree () {
         this.open_status = !this.open_status;
         this.render(false);
+
+        setTimeout(() => make_active( this.icon_element ), 0)
     }
 
     getIcon () {

@@ -35,7 +35,7 @@ class __MTree_Object extends Component {
 
                 cls.active:bg-Vwebdrom-editor-blue-light 
                 cls.active:border-Vwebdrom-editor-blue 
-                cls.active:border-[1px] cls.active:mr-[1px]
+                cls.active:border-[1px]
                 cls.active:pl-[${this.visual_depth * 4 - 1}px]
                 cls.active:py-1`
     }

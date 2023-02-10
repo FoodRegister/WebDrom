@@ -289,7 +289,7 @@ a {
     text-decoration: none;
 }
 
-.tailwind:not(.no-tailwind) {
+:not(.no-tailwind) {
     padding-top:    var(--pt);
     padding-bottom: var(--pb);
     padding-left:   var(--pl);
@@ -315,3 +315,8 @@ button.tailwind:not(.no-tailwind) {
     transition: background-color 300ms 75ms;
     z-index: 5;
 }
+
+/*.explorer-transition {
+    --duration: 100ms;
+    transition: height 100ms 0s;
+}*/

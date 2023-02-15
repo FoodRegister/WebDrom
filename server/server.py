@@ -40,6 +40,8 @@ class WebDromServer(BaseHTTPRequestHandler):
     def do_GET (self):
         status, text, extension = 404, bytes(f"Could not find route {self.path}", encoding="utf-8"), "text/html"
 
+        if self.path in [ "/", "" ]: self.path = "/webdrom/editor/index.html"
+
         try:
             for api_object in API.classes(self):
                 if api_object.valid(self.path):

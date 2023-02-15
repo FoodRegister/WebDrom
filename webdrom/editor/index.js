@@ -34,7 +34,7 @@ class HomeProjectPage extends ProjectPage {
 
     _first_render () {
         let tree     = new MExplorer (this, { "text": "Explorer", "components": [
-            { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
+            { "text": "Webdrom", "component": (parent) => new FileTree(parent).render(), "icons": []  },
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
         ] });

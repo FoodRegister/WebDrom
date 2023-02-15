@@ -8,7 +8,7 @@ class __MTree_Object extends Component {
         this.depth     = depth;
         this.visual_depth = depth + 3;
 
-        this.open_status = true;
+        this.open_status = false;
 
         this._first_render();
     }
@@ -22,6 +22,7 @@ class __MTree_Object extends Component {
 
     getIcon () {
         if (this.config.icon) return this.config.icon;
+        if (this.config.type == "file") return "description"
         if (this.open_status) return "expand_more";
 
         return "chevron_right"
@@ -116,11 +117,18 @@ class MTree extends Component {
         this._first_render();
     }
     _first_render () {
-        this.element = new __MTree_Object( this, this.config, 1 ).render();
+        if (this.config instanceof Array) {
+            this.elements = this.config.map((_conf) => {
+                console.log(_conf)
+                return new __MTree_Object( this, _conf, 1 ).render()
+            })
+        } else {
+            this.elements = [ new __MTree_Object( this, this.config, 1 ).render() ];
+        }
     }
     _render () {
         return createElement("div", {}, "", [
-            this.element
+            ...this.elements
         ])
     }
 }

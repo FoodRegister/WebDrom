@@ -119,7 +119,6 @@ class MTree extends Component {
     _first_render () {
         if (this.config instanceof Array) {
             this.elements = this.config.map((_conf) => {
-                console.log(_conf)
                 return new __MTree_Object( this, _conf, 1 ).render()
             })
         } else {

@@ -8,22 +8,24 @@ const Dromadaire = ( function () {
     let iota = () => { let idx = 1; return () => { return idx ++; } }
     
     const TOKEN_TYPES = {  }
+    const TOKEN_TYPE_BY_ID = {}
     const token_iota_gen = iota()
     const token_gen      = (str) => {
-        TOKEN_TYPES[str] = token_iota_gen();
+        TOKEN_TYPES[str]                   = token_iota_gen();
+        TOKEN_TYPE_BY_ID[TOKEN_TYPES[str]] = str;
 
         return TOKEN_TYPES[str]
     }
 
-    const STRING_TOKEN = token_gen("STRING_TOKEN");
-    const NAME_TOKEN   = token_gen("NAME_TOKEN");
-    const NUMBER_TOKEN = token_gen("NUMBER_TOKEN");
-    const DOT_TOKEN    = token_gen("DOT_TOKEN");
-    const PLUS_TOKEN   = token_gen("PLUS_TOKEN");
-    const MINUS_TOKEN  = token_gen("MINUS_TOKEN");
-    const TIMES_TOKEN  = token_gen("TIMES_TOKEN");
-    const DIVIDE_TOKEN = token_gen("DIVIDE_TOKEN");
-    const SET_TOKEN    = token_gen("SET_TOKEN");
+    const STRING_TOKEN = token_gen("STRING");
+    const NAME_TOKEN   = token_gen("NAME");
+    const NUMBER_TOKEN = token_gen("NUMBER");
+    const DOT_TOKEN    = token_gen("DOT");
+    const PLUS_TOKEN   = token_gen("PLUS");
+    const MINUS_TOKEN  = token_gen("MINUS");
+    const TIMES_TOKEN  = token_gen("TIMES");
+    const DIVIDE_TOKEN = token_gen("DIVIDE");
+    const SET_TOKEN    = token_gen("SET");
 
     const RBRACKET         = token_gen("RBRACKET")
     const RSQUARED_BRACKET = token_gen("RSQUARED_BRACKET")
@@ -75,6 +77,26 @@ const Dromadaire = ( function () {
         position () {
             return { "file": this.file, "line": this.line, "col": this.col, "idx": this.idx, "size": this.size }
         }
+        posToString () {
+            return `File ${this.file.name()} at line ${this.line} at col ${this.col} with size ${this.size}`
+        }
+        showPosition (linePrefix="") {
+            let line = this.file.getLine(this.line);
+            let col  = this.col - 1;
+            if (col >= 10) {
+                line = "..." + line.substring( col - 7 );
+                col  = 10;
+            }
+
+            let s_col = col; let e_col = col + this.size;
+            let valid = ( idx ) => s_col <= idx && idx < e_col;
+
+            let line_v = ""
+            for (let idx = 0; idx < line.length; idx ++) {
+                line_v += valid(idx) ? "^" : " ";
+            }
+            return linePrefix + line + "\n" + linePrefix + line_v
+        }
     }
 
     /**
@@ -103,16 +125,69 @@ const Dromadaire = ( function () {
         message () { return this.__message }
         stack   () { return this.__stack   }
     }
+    /**
+     * Parser Error
+     */
+    class ParserError extends PositionBased {
+        constructor (message, rule_string, sub_errors) {
+            super();
+            this.__message = message;
+            this.__rule    = rule_string
+            this.__sub_err = sub_errors;
+        }
+        message    () { return this.__message }
+        rule       () { return this.__rule    }
+        sub_errors () { return this.__sub_err }
+        
+        is_important (error) {
+            return error.token_count > 1;
+        }
+        filter_error () {
+            for (let error of this.__sub_err)
+                if (this.is_important(error))
+                    return error;
+            return this.__sub_err[this.__sub_err.length - 1];
+        }
+        filter_errors () {
+            let array = [ this.filter_error() ]
+            return array[0] ? array : []
+        }
+
+        toString (depth=0) {
+            let prefix = "";
+            for (let id_depth = 0; id_depth < depth; id_depth ++) prefix += "\t";
+
+            let string = `${prefix}[RULE: ${this.__rule}]\n`
+                       + `${prefix}  ${this.posToString()} [${this.token_count}]\n`
+                       + this.showPosition( prefix + "    " ) + "\n"
+                       + `${prefix}  ${this.__message}\n`
+
+            let idx = 0;
+            
+            for (let sub_err of this.filter_errors()) {
+                string += sub_err.toString( depth )
+            }
+
+            return string;
+        }
+    }
 
     /**
      * File object representing a string
      */
     class File {
-        constructor (string) {
+        constructor (string, name) {
             this.__string = string;
+            this.__name   = name;
+
+            this.__lines  = string.split("\n");
         }
 
         string () { return this.__string; }
+        name   () { return this.__name;   }
+        getLine (idx, offset=-1) {
+            return this.__lines[idx + offset];
+        }
     }
 
     /**
@@ -248,7 +323,7 @@ const Dromadaire = ( function () {
             this.__col ++;
             this.__char = this.__string[this.__idx];
 
-            if (this.__char === '\n') { this.__line ++; this.__col = 1; }
+            if (this.__char === '\n') { this.__line ++; this.__col = 0; }
             
             this.advanced = this.__idx < this.__string.length;
             return this.__char;
@@ -304,6 +379,9 @@ const Dromadaire = ( function () {
             this.arguments  = [] 
             this.args_saves = []
         
+            this.errors   = [];
+            this.err_save = [];
+
             this.config = undefined;
         }
         set_config (config) {
@@ -312,6 +390,23 @@ const Dromadaire = ( function () {
         args () {
             if (this.args_saves.length == 0) return this.arguments
             return this.arguments.slice(this.args_saves[this.args_saves.length - 1])
+        }
+        saveError () {
+            this.err_save.push(this.errors.length)
+        }
+        getErrors () {
+            let start = this.err_save[this.err_save.length - 1]
+            return this.errors.slice( start )
+        }
+        restoreError () {
+            let rst = this.err_save[this.err_save.length - 1];
+            this.err_save.pop();
+
+            while (rst < this.errors.length)
+                this.errors.pop();
+        }
+        freeError () {
+            this.err_save.pop();
         }
         save () {
             this.saves.push(this.tok_idx)
@@ -357,16 +452,35 @@ const Dromadaire = ( function () {
             while (rst < this.arguments.length)
                 this.arguments.pop();
         }
+        showErrors () {
+            for (let error of this.errors)
+                console.error(error.toString())
+        }
     }
 
     class ParserRule {
+        saveState (cursor) {
+            this.__idx_start = cursor.tok_idx;
+        }
+        saveEndState (cursor) {
+            this.__idx_end = cursor.tok_idx;
+        }
+        apply (cursor, error) {
+            let st_tok = cursor.tokens[this.__idx_start];
+            let ed_tok = cursor.tokens[this.__idx_end];
+
+            error.transferPosition( cursor.tokens[this.__idx_start] )
+            error.size = ed_tok.size + ed_tok.idx - st_tok.idx;
+            error.token_count = this.__idx_end + 1 - this.__idx_start;
+        }
+
         compile (str) {
             return (new RuleCompiler()).compile(str)
         }
         parse (cursor) { throw "Not implemented" }
     }
 
-    class ListRule      extends ParserRule {
+    class ListRule extends ParserRule {
         constructor (sub_rules) {
             super()
             this.wrapper = undefined;
@@ -374,17 +488,33 @@ const Dromadaire = ( function () {
         }
 
         parse (cursor) {
-            cursor.save();
+            cursor.saveError();
 
+            let result = this._parse(cursor);
+            if (result == COMPILER_ERR_NODE) {
+                let sub_errors = cursor.getErrors();
+                cursor.restoreError();
+
+                let error  = new ParserError( "Compilation error, could not read token array", this.__name, sub_errors )
+                this.apply(cursor, error);
+                cursor.errors.push(error)
+            } else cursor.restoreError();
+            return result;
+        }
+        _parse (cursor) {
+            this.saveState(cursor)
+            cursor.save();
             for (let sub_rule of this.sub_rules) {
                 let object = sub_rule.parse(cursor)
 
                 if (object == COMPILER_ERR_NODE) {
+                    this.saveEndState(cursor);
+                    
                     cursor.restore()
                     return object
                 }
             }
-            
+
             if (this.wrapper) {
                 let data = this.get_linked(cursor)
 
@@ -415,7 +545,7 @@ const Dromadaire = ( function () {
         }
 
         parse (cursor) {
-            object = this.rule.parse(cursor)
+            let object = this.rule.parse(cursor)
             if (object == COMPILER_ERR_NODE)
                 return COMPILER_CONTINUE_BUTHADERR_NODE
         
@@ -431,10 +561,11 @@ const Dromadaire = ( function () {
             }
 
             let nodes = []
-
+            cursor.saveError();
             cursor.save()
 
             while (cursor.tok_idx < cursor.token_count()) {
+                this.saveState(cursor);
                 if (cursor.get_cur_token().type() == RCURLY_BRACKET)
                     break
 
@@ -455,25 +586,41 @@ const Dromadaire = ( function () {
             
                 if (final_node) {
                     nodes.push(final_node)
+                    cursor.restoreError()
+                    cursor.saveError()
                 } else {
+                    this.saveEndState(cursor);
+                    let errors = cursor.getErrors();
+
+                    cursor.restoreError()
+                    let error = new ParserError( "Could not compile inner rule", "BLOCK", errors )
+                    this.apply(cursor, error)
+                    cursor.errors.push( error )
+
                     cursor.restore()
                     return COMPILER_ERR_NODE
                 }
+
+                cursor.last_error = []
             
                 if ( cursor.tok_idx >= cursor.token_count() 
                  || (
                     cursor.get_cur_token().type() != EOF
                  && cursor.get_cur_token().type() != RCURLY_BRACKET
                  )) {
+                    cursor.restoreError()
                     cursor.restore()
                     return cursor.COMPILER_ERR_NODE
                 }
                 
                 if ((! bracketBased) && cursor.get_cur_token().type() == RCURLY_BRACKET) {
+                    cursor.restoreError()
                     cursor.restore()
                     return cursor.COMPILER_ERR_NODE
                 }
             }
+
+            cursor.restoreError()
 
             if (bracketBased) {
                 if (cursor.get_cur_token().type() != RCURLY_BRACKET) {
@@ -483,7 +630,7 @@ const Dromadaire = ( function () {
                 
                 cursor.tok_idx += 1
             }
-        
+            
             cursor.restore_arguments()
             cursor.free(true)
             console.error("TODO put nodes inside of BlockNode")
@@ -501,9 +648,9 @@ const Dromadaire = ( function () {
         }
         parse (cursor) {
             cursor.save()
-            idx = 0
-            while (idx != self.times_max) {
-                object = self.rule.parse(cursor)
+            let idx = 0
+            while (idx != this.times_max) {
+                let object = this.rule.parse(cursor)
                 
                 if (object != COMPILER_CONTINUE_NODE) {
                     if (this.all_needed) {
@@ -525,15 +672,15 @@ const Dromadaire = ( function () {
     class TokenRule     extends ParserRule {
         constructor (type, add_val, expected_value=undefined) {
             super();
-            this.type    = type;
+            this.type    = TOKEN_TYPES[ type ];
             this.add_val = add_val;
 
             this.expected_value = expected_value;
         }
 
         parse (cursor) {
-            if (cursor.get_cur_token().type() == self.type
-             && (self.expected_value === undefined || self.expected_value == cursor.get_cur_token().value())) {
+            if (cursor.get_cur_token().type() == this.type
+             && (this.expected_value === undefined || this.expected_value == cursor.get_cur_token().value())) {
                 if ( self.add_val ) {
 				    if ( cursor.get_cur_token().value() !== undefined )
 				    	cursor.addArgument(cursor.get_cur_token().value())
@@ -544,6 +691,17 @@ const Dromadaire = ( function () {
 			    cursor.tok_idx += 1
 			    return COMPILER_CONTINUE_NODE
             }
+            this.saveState(cursor)
+            this.saveEndState(cursor)
+
+            let token = cursor.get_cur_token()
+            let error;
+            if (this.expected_value)
+                error = new ParserError(`Missing token { type = ${TOKEN_TYPE_BY_ID[ this.type ]}, value = ${this.expected_value} }, found { ${TOKEN_TYPE_BY_ID[ token.type() ]}, ${token.value()} }`, "TOKEN", [])
+            else 
+                error = new ParserError(`Missing token { type = ${TOKEN_TYPE_BY_ID[ this.type ]} }, found { ${TOKEN_TYPE_BY_ID[ token.type() ]} }`, "TOKEN", [])
+            this.apply(cursor, error);
+            cursor.errors.push(error);
             return COMPILER_ERR_NODE
         }
     }
@@ -630,11 +788,19 @@ const Dromadaire = ( function () {
         }
         factor_term () {
             let tok = this.get_cur_token()
+
             this.cursor.tok_idx ++;
 
             if (tok.type() == NUMBER_TOKEN) return new ConstantNode(new Number(tok.value()))
+            
+            this.cursor.tok_idx --;
+            let error = new ParserError( `Unknown token { ${ TOKEN_TYPES[ tok.type() ] }, ${tok.value()} }`, "EXPRESSION:FACTOR", [] )
+            this.saveState(this.cursor);
+            this.saveEndState(this.cursor);
+            this.apply(this.cursor, error);
+            this.cursor.errors.push(error)
 
-            throw "Not implemented"
+            throw "Token not recognized"
         }
     }
 
@@ -663,7 +829,7 @@ const Dromadaire = ( function () {
             this.tok_idx = -1
         }
 
-        compile (string) {
+        compile (string, name=undefined) {
             this.config = new ParserConfig()
             let file  = new File(string)
             let lexer = new Lexer(file)
@@ -673,7 +839,11 @@ const Dromadaire = ( function () {
             this.tokens = lexer_data[0]
             this.tok_idx = 0;
 
-            return this._compile();
+            let rule      = this._compile();
+            rule.__string = string;
+            rule.__name   = name ?? string;
+
+            return rule;
         }
         token (offset = 0) {
             return this.tokens[this.tok_idx + offset]
@@ -790,27 +960,36 @@ const Dromadaire = ( function () {
     }
 
     _RuleCompiler.config = new ParserConfig()
+
     const DROM_RULE_LIST = [
         _RuleCompiler.compile( "/NAME=if/ /LBRACKET/ EXPR /RBRACKET/ {}"
                              +"[/NAME=else/ /NAME=if/ /LBRACKET/ EXPR /RBRACKET/ {}]*"
-                             +"[/NAME=else/ {}]"),
-        _RuleCompiler.compile( "/NAME=while/ /LBRACKET/ EXPR /RBRACKET/ {}" ),
-        _RuleCompiler.compile( "/NAME=function/ //NAME/ /LBRACKET/ [//NAME/ [/COMMA/ //NAME/]*] /RBRACKET/ {}" ),
-        _RuleCompiler.compile( "/NAME=import/ //NAME/ [/DOT/ //NAME/]*" ),
-        _RuleCompiler.compile( "EXPR" ).link((x) => x)
+                             +"[/NAME=else/ {}]", "IF"),
+        _RuleCompiler.compile( "/NAME=while/ /LBRACKET/ EXPR /RBRACKET/ {}", "WHILE" ),
+        _RuleCompiler.compile( "/NAME=function/ //NAME/ /LBRACKET/ /RBRACKET/ {}", "FUNCTION" ),
+        _RuleCompiler.compile( "/NAME=import/ //NAME/ [/DOT/ //NAME/]*", "IMPORT" ),
+        _RuleCompiler.compile( "EXPR", "EXPRESSION" ).link((x) => x)
     ]
 
-    function compile ( file ) {
+    function compile ( file, config = {} ) {
         let lexer = new Lexer(file);
         let [ tokens, errors ] = lexer.build()
+
+        if (errors.length != 0 && (!config.bypass_lexer)) return errors;
 
         let cursor = new ParserCursor( tokens );
         let m_rule = new BlockRule();
 
         cursor.config = _RuleCompiler.config;
         let result = m_rule.parse(cursor, false);
-        console.log(result)
-        console.log(cursor.arguments)
+        
+        // TODO fix error managemenet on nested objects not showing the name of the inner rule  
+        // "function f() { \nif (13+14 {}\n }"
+        if (cursor.errors.length != 0) {
+            if (config.show_errors) cursor.showErrors();
+            return cursor.errors;
+        }
+        return cursor.arguments[0]
     }
 
     class Node extends PositionBased {

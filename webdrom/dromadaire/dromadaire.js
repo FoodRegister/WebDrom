@@ -579,7 +579,7 @@ const Dromadaire = ( function () {
         }
         parse (cursor, bracketBased=true) {
             let [ state, can_continue ] = this._parse(cursor, bracketBased);
-            console.log(cursor.saves.length, cursor.tokens[cursor.tok_idx], can_continue)
+            
             if (can_continue && cursor.bypass_errors) {
                 cursor.save();
                 this.advance_to_valid(cursor, bracketBased)

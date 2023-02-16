@@ -89,6 +89,7 @@ const Dromadaire = ( function () {
             }
 
             let s_col = col; let e_col = col + this.size;
+            if (e_col == s_col) { line += " "; e_col ++; }
             let valid = ( idx ) => s_col <= idx && idx < e_col;
 
             let line_v = ""
@@ -158,7 +159,7 @@ const Dromadaire = ( function () {
             for (let id_depth = 0; id_depth < depth; id_depth ++) prefix += "\t";
 
             let string = `${prefix}[RULE: ${this.__rule}]\n`
-                       + `${prefix}  ${this.posToString()} [${this.token_count}]\n`
+                       + `${prefix}  ${this.posToString()}\n`
                        + this.showPosition( prefix + "    " ) + "\n"
                        + `${prefix}  ${this.__message}\n`
 
@@ -460,18 +461,18 @@ const Dromadaire = ( function () {
 
     class ParserRule {
         saveState (cursor) {
-            this.__idx_start = cursor.tok_idx;
+            return { __idx_start: cursor.tok_idx };
         }
-        saveEndState (cursor) {
-            this.__idx_end = cursor.tok_idx;
+        saveEndState (state, cursor) {
+            state.__idx_end = cursor.tok_idx;
         }
-        apply (cursor, error) {
-            let st_tok = cursor.tokens[this.__idx_start];
-            let ed_tok = cursor.tokens[this.__idx_end];
+        apply (state, cursor, error) {
+            let st_tok = cursor.tokens[state.__idx_start];
+            let ed_tok = cursor.tokens[state.__idx_end];
 
-            error.transferPosition( cursor.tokens[this.__idx_start] )
+            error.transferPosition( cursor.tokens[state.__idx_start] )
             error.size = ed_tok.size + ed_tok.idx - st_tok.idx;
-            error.token_count = this.__idx_end + 1 - this.__idx_start;
+            error.token_count = state.__idx_end + 1 - state.__idx_start;
         }
 
         compile (str) {
@@ -490,28 +491,28 @@ const Dromadaire = ( function () {
         parse (cursor) {
             cursor.saveError();
 
-            let result = this._parse(cursor);
+            let [ state, result ] = this._parse(cursor);
             if (result == COMPILER_ERR_NODE) {
                 let sub_errors = cursor.getErrors();
                 cursor.restoreError();
 
                 let error  = new ParserError( "Compilation error, could not read token array", this.__name, sub_errors )
-                this.apply(cursor, error);
+                this.apply(state, cursor, error);
                 cursor.errors.push(error)
             } else cursor.restoreError();
             return result;
         }
         _parse (cursor) {
-            this.saveState(cursor)
+            let state = this.saveState(cursor)
             cursor.save();
             for (let sub_rule of this.sub_rules) {
                 let object = sub_rule.parse(cursor)
 
                 if (object == COMPILER_ERR_NODE) {
-                    this.saveEndState(cursor);
+                    this.saveEndState(state, cursor);
                     
                     cursor.restore()
-                    return object
+                    return [ state, object ]
                 }
             }
 
@@ -522,11 +523,11 @@ const Dromadaire = ( function () {
                 cursor.free(true)
                 cursor.addArgument(data)
 
-                return data;
+                return [ state, data ];
             }
 
             cursor.free(true)
-            return COMPILER_CONTINUE_NODE
+            return [ state, COMPILER_CONTINUE_NODE ]
         }
         
         get_linked (cursor) {
@@ -565,7 +566,7 @@ const Dromadaire = ( function () {
             cursor.save()
 
             while (cursor.tok_idx < cursor.token_count()) {
-                this.saveState(cursor);
+                let state = this.saveState(cursor);
                 if (cursor.get_cur_token().type() == RCURLY_BRACKET)
                     break
 
@@ -589,12 +590,12 @@ const Dromadaire = ( function () {
                     cursor.restoreError()
                     cursor.saveError()
                 } else {
-                    this.saveEndState(cursor);
+                    this.saveEndState(state, cursor);
                     let errors = cursor.getErrors();
 
                     cursor.restoreError()
                     let error = new ParserError( "Could not compile inner rule", "BLOCK", errors )
-                    this.apply(cursor, error)
+                    this.apply(state, cursor, error)
                     cursor.errors.push( error )
 
                     cursor.restore()
@@ -691,8 +692,8 @@ const Dromadaire = ( function () {
 			    cursor.tok_idx += 1
 			    return COMPILER_CONTINUE_NODE
             }
-            this.saveState(cursor)
-            this.saveEndState(cursor)
+            let state = this.saveState(cursor)
+            this.saveEndState(state, cursor)
 
             let token = cursor.get_cur_token()
             let error;
@@ -700,7 +701,7 @@ const Dromadaire = ( function () {
                 error = new ParserError(`Missing token { type = ${TOKEN_TYPE_BY_ID[ this.type ]}, value = ${this.expected_value} }, found { ${TOKEN_TYPE_BY_ID[ token.type() ]}, ${token.value()} }`, "TOKEN", [])
             else 
                 error = new ParserError(`Missing token { type = ${TOKEN_TYPE_BY_ID[ this.type ]} }, found { ${TOKEN_TYPE_BY_ID[ token.type() ]} }`, "TOKEN", [])
-            this.apply(cursor, error);
+            this.apply(state, cursor, error);
             cursor.errors.push(error);
             return COMPILER_ERR_NODE
         }
@@ -746,7 +747,8 @@ const Dromadaire = ( function () {
                 cursor.addArgument(value)
                 
                 return COMPILER_CONTINUE_NODE
-            } catch (error) { console.log(error) }
+            } catch (error) {  }
+
             this.cursor = undefined
             cursor.free(false)
             return COMPILER_ERR_NODE 
@@ -795,9 +797,9 @@ const Dromadaire = ( function () {
             
             this.cursor.tok_idx --;
             let error = new ParserError( `Unknown token { ${ TOKEN_TYPES[ tok.type() ] }, ${tok.value()} }`, "EXPRESSION:FACTOR", [] )
-            this.saveState(this.cursor);
-            this.saveEndState(this.cursor);
-            this.apply(this.cursor, error);
+            let state = this.saveState(this.cursor);
+            this.saveEndState(state, this.cursor);
+            this.apply(state, this.cursor, error);
             this.cursor.errors.push(error)
 
             throw "Token not recognized"
@@ -983,8 +985,6 @@ const Dromadaire = ( function () {
         cursor.config = _RuleCompiler.config;
         let result = m_rule.parse(cursor, false);
         
-        // TODO fix error managemenet on nested objects not showing the name of the inner rule  
-        // "function f() { \nif (13+14 {}\n }"
         if (cursor.errors.length != 0) {
             if (config.show_errors) cursor.showErrors();
             return cursor.errors;

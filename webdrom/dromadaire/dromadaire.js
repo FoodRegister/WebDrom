@@ -372,7 +372,7 @@ const Dromadaire = ( function () {
     const COMPILER_CONTINUE_BUTHADERR_NODE = new Token(-12, "")
 
     class ParserCursor {
-        constructor (tokens) {
+        constructor (tokens, bypass_errors=false) {
             this.tokens = tokens
             
             this.tok_idx    = 0;
@@ -384,6 +384,8 @@ const Dromadaire = ( function () {
             this.err_save = [];
 
             this.config = undefined;
+
+            this.bypass_errors = bypass_errors;
         }
         set_config (config) {
             this.config = config
@@ -414,7 +416,7 @@ const Dromadaire = ( function () {
             this.args_saves.push(this.arguments.length)
         }
         free (found) {
-            if (!found) this.restore
+            if (!found) this.restore()
             else if (this.args_saves.length != 0) {
                 this.saves.pop();
                 this.args_saves.pop();
@@ -554,10 +556,43 @@ const Dromadaire = ( function () {
         }
     }
     class BlockRule extends ParserRule {
+        advance_to_valid (cursor, bracketBased) {
+            let height = 0;
+
+            while (true) {
+                if (cursor.get_cur_token().type() < 0) break;
+                if (cursor.get_cur_token().type() == EOF
+                 && height <= 0) break;
+
+                if (cursor.get_cur_token().type() == LCURLY_BRACKET) height ++;
+                if (cursor.get_cur_token().type() == RCURLY_BRACKET) {
+                    height --;
+                    if (height < 0)
+                        return true;
+                }
+
+                cursor.tok_idx ++;
+            }
+
+            this.parse(cursor, bracketBased);
+            return false;
+        }
         parse (cursor, bracketBased=true) {
+            let [ state, can_continue ] = this._parse(cursor, bracketBased);
+            console.log(cursor.saves.length, cursor.tokens[cursor.tok_idx], can_continue)
+            if (can_continue && cursor.bypass_errors) {
+                cursor.save();
+                this.advance_to_valid(cursor, bracketBased)
+                cursor.restore();
+            }
+        
+            return state;
+        }
+        // TODO fix error handling on "if (1 + 1 {}; function f () { if (1+1) { if (1+ 1) }; if(1 + 1) }""
+        _parse (cursor, bracketBased=true) {
             if (bracketBased) {
                 if (cursor.get_cur_token().type() != LCURLY_BRACKET)
-                    return COMPILER_ERR_NODE
+                    return [ COMPILER_ERR_NODE, false ];
                 cursor.tok_idx += 1;
             }
 
@@ -599,7 +634,7 @@ const Dromadaire = ( function () {
                     cursor.errors.push( error )
 
                     cursor.restore()
-                    return COMPILER_ERR_NODE
+                    return [ COMPILER_ERR_NODE, true ];
                 }
 
                 cursor.last_error = []
@@ -611,13 +646,13 @@ const Dromadaire = ( function () {
                  )) {
                     cursor.restoreError()
                     cursor.restore()
-                    return cursor.COMPILER_ERR_NODE
+                    return [ COMPILER_ERR_NODE, false ];
                 }
                 
                 if ((! bracketBased) && cursor.get_cur_token().type() == RCURLY_BRACKET) {
                     cursor.restoreError()
                     cursor.restore()
-                    return cursor.COMPILER_ERR_NODE
+                    return [ COMPILER_ERR_NODE, false ];
                 }
             }
 
@@ -626,7 +661,7 @@ const Dromadaire = ( function () {
             if (bracketBased) {
                 if (cursor.get_cur_token().type() != RCURLY_BRACKET) {
                     cursor.restore()
-                    return COMPILER_ERR_NODE
+                    return [ COMPILER_ERR_NODE, false ];
                 }
                 
                 cursor.tok_idx += 1
@@ -637,7 +672,7 @@ const Dromadaire = ( function () {
             console.error("TODO put nodes inside of BlockNode")
             cursor.addArgument( nodes );
 
-            return COMPILER_CONTINUE_NODE
+            return [ COMPILER_CONTINUE_NODE, false ];
         }
     }
     class ManyRule      extends ParserRule {
@@ -979,7 +1014,7 @@ const Dromadaire = ( function () {
 
         if (errors.length != 0 && (!config.bypass_lexer)) return errors;
 
-        let cursor = new ParserCursor( tokens );
+        let cursor = new ParserCursor( tokens, config.bypass_parser );
         let m_rule = new BlockRule();
 
         cursor.config = _RuleCompiler.config;

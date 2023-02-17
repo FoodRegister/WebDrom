@@ -60,11 +60,13 @@ class ProjectComponent extends Component {
         super(parent);
 
         this.project_page = (new project_page(this)).render();
+        this.prompt       = new MPromptManager();
     }
 
     _render () {
         return createElement("div", {}, "flex-1", [
-            this.project_page
+            this.project_page,
+            this.prompt.render()
         ])
     }
 }
@@ -81,5 +83,9 @@ class Project {
         this.body.appendChild(this.component.render())
         
         document.dispatchEvent( customEvent )
+    }
+
+    prompt (config) {
+        this.component.prompt.addPrompt(config)
     }
 }

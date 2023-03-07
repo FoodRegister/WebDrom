@@ -96,7 +96,7 @@ class _Tailwind {
         ]
     }
 
-    forward = [ "material-icons-outlined", "no-tailwind" ]
+    forward = [ "material-icons-outlined", "no-tailwind", "vscode-icons" ]
     is_forward (cls) {
         return cls.startsWith("forward-") 
             || this.forward.includes(cls) 

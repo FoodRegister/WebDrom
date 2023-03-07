@@ -31,6 +31,9 @@ class HomeProjectPage extends ProjectPage {
 
         this._first_render();
     }
+    clicked(onglet){
+        console.log("hi")
+    }
 
     _first_render () {
         let tree     = new MExplorer (this, { "text": "Explorer", "components": [
@@ -38,11 +41,20 @@ class HomeProjectPage extends ProjectPage {
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
         ] });
+        let config   = undefined
+        let onglets  = createElement("div", {}, "w-full h-8 bg-Vwebdrom-navbar-background flex", [
+            new Onglet(this,config).render()
+        ])
+        let editor   = createElement("textarea", {}, "w-full h-full bg-Vwebdrom-light-background text-white p-4", []);
+        let editorparent   = createElement("div", {}, "w-full h-full bg-Vwebdrom-editor-blue-light", [
+            onglets,
+            editor
+        ])
         let splitter = new MSplitter (this, "horizontal", undefined, true,
             createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
                 tree.render()
             ]),
-            createElement("div", {}, "", [])
+            editorparent
         )
         splitter.sizes = [ 400, 0 ];
         this.element = createElement("div", {}, "h-full", [

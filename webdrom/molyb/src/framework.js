@@ -135,8 +135,8 @@ function createElement (type, props={}, classes="", childrens=[]) {
     el.classList.add("tailwind");
     return el;
 }
-function createUnsafeText (text) {
-    const el = document.createElement("span")
+function createUnsafeText (text, classes="") {
+    const el = createElement("span",{}, classes, [])
     el.innerHTML = text;
     return el;
 }

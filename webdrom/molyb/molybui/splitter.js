@@ -12,7 +12,7 @@ class __MSplitter_Separator extends Component {
 
     _first_render () {
         const innerBG = createElement("div", {}, this.cls_separator, [])
-        this.element = createElement("div", {}, "flex-0 z-5", [
+        this.element = createElement("div", {}, "flex-0", [
             innerBG
         ])
 

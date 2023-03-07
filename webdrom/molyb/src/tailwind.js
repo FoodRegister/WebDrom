@@ -601,6 +601,9 @@ class _Tailwind {
 
         throw `${style} not found for justify, and justify is fully implemented`;
     }
+    _tailwind_z (style) {
+        return `z-index: ${style};`;
+    }
 
     _tailwind_whitespace (style) {
         if (style == "nowrap") return "white-space: nowrap;"

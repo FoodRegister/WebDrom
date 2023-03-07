@@ -37,7 +37,7 @@ class HomeProjectPage extends ProjectPage {
 
     _first_render () {
         let tree     = new MExplorer (this, { "text": "Explorer", "components": [
-            { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
+            { "text": "Webdrom", "component": (parent) => new FileTree(parent).render(), "icons": []  },
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
         ] });
@@ -72,11 +72,13 @@ class ProjectComponent extends Component {
         super(parent);
 
         this.project_page = (new project_page(this)).render();
+        this.prompt       = new MPromptManager();
     }
 
     _render () {
         return createElement("div", {}, "flex-1", [
-            this.project_page
+            this.project_page,
+            this.prompt.render()
         ])
     }
 }
@@ -93,5 +95,9 @@ class Project {
         this.body.appendChild(this.component.render())
         
         document.dispatchEvent( customEvent )
+    }
+
+    prompt (config) {
+        this.component.prompt.addPrompt(config)
     }
 }

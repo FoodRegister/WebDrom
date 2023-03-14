@@ -1,8 +1,17 @@
 
+NATIVE_TYPE_RESERVED = 256
+
 class FieldType:
     __pc_id_count = 0
     __instances   = {}
 
+    @staticmethod
+    def start_module ():
+        pass
+    @staticmethod
+    def end_module():
+        assert FieldType.__pc_id_count < NATIVE_TYPE_RESERVED
+        FieldType.__pc_id_count = NATIVE_TYPE_RESERVED
     @staticmethod
     def instances():
         return FieldType.__instances

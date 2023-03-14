@@ -59,4 +59,23 @@ class _AnyFieldType(FieldType):
         
         assert False, "Could not write object"
 
+class ModelType(FieldType):
+    def __init__(self, fields):
+        super().__init__()
+
+        self.fields = fields # array of tuple (name, field_type)
+    def _read(self, buffer):
+        object = {}
+
+        for field_name, field_type in self.fields:
+            object[field_name] = field_type.read(buffer)
+
+        return object
+    def _write(self, buffer, object):
+        for field_name, field_type in self.fields:
+            assert field_name in object
+
+            field_type.write(buffer, object[field_name])
+        return super()._write(buffer, object)
+
 AnyFieldType = _AnyFieldType()

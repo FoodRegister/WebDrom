@@ -112,21 +112,36 @@ class _Tailwind {
     createShortcut (name, result) {
         this.shortcuts[name] = result;
     }
+    generate_cache_name (string) {
+        if (string === undefined) return string;
+        let classes = string.split("\n").join(" ")
+                            .split("\t").join(" ")
+                            .split(" ");
+        
+        let cc = classes.filter((x) => {
+            return x.trim() !== "" && !this.is_forward(x)
+        })
+        return cc.join(" ")
+    }
     async compile (element, string) {
         string = string.trim();
         if (string == "") return ;
 
+        let _cache_name = this.generate_cache_name (string);
+        
         const timeA = new Date()
         await this.await_for_tailwind();
         const timeB = new Date()
-        if (this._cache[string]) {
+        if (this._cache[_cache_name]) {
             const classes = []
-            classes.push(this._cache[string]);
+            classes.push(this._cache[_cache_name]);
 
-            for (let str of string.split(" "))
+            for (let str of string.split(" ")) {
+                str = str.trim();
                 if (this.is_forward(str))
                     classes.push(this.forward_transform(str));
-            
+            }
+
             if (element)
                 for (let cls of classes)
                     element.classList.add(cls);
@@ -137,7 +152,7 @@ class _Tailwind {
         const className = `tailwind-${this.next_tailwind_class_id()}`
         string = string.split("\n").join(" ");
         string.split(" ");
-        this._cache[string] = className;
+        this._cache[_cache_name] = className;
 
         const { array, forward } = this._compile(string)
         const dict_ = {}
@@ -155,7 +170,9 @@ class _Tailwind {
         }
 
         const DCSS = CSS.join("\n")
-        css_container.innerHTML += DCSS
+        let local_css_container = document.createElement("style")
+        local_css_container.innerHTML += DCSS
+        document.head.appendChild(local_css_container);
         if (element) {
             element.classList.add(className)
             for (let x of forward)
@@ -167,7 +184,9 @@ class _Tailwind {
             CSS.push(this.__css_from_style_array(className, styles, attr, true))
         }
 
-        setTimeout(() => css_container.innerHTML += CSS.join("\n"), 0);
+        setTimeout(() => {
+            local_css_container.innerHTML += CSS.join("\n")
+        }, 0);
 
         const timeC = Date.now()
 

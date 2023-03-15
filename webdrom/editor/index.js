@@ -1,7 +1,9 @@
 
 class ProjectPage extends Component {
-    constructor (parent) {
+    constructor (parent, engine) {
         super(parent);
+
+        this.engine = engine;
 
         if (this.constructor == ProjectPage)
             throw "Cannot create default project page"
@@ -26,8 +28,8 @@ const TEST_MTREE_CONFIG = {
 }
 
 class HomeProjectPage extends ProjectPage {
-    constructor (parent) {
-        super(parent);
+    constructor (parent, engine) {
+        super(parent, engine);
 
         this._first_render();
     }
@@ -42,19 +44,12 @@ class HomeProjectPage extends ProjectPage {
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
         ] });
         let config   = undefined
-        let onglets  = createElement("div", {}, "w-full h-8 bg-Vwebdrom-navbar-background flex", [
-            new Onglet(this,config).render()
-        ])
-        let editor   = createElement("textarea", {}, "w-full h-full bg-Vwebdrom-light-background text-white p-4", []);
-        let editorparent   = createElement("div", {}, "w-full h-full bg-Vwebdrom-editor-blue-light", [
-            onglets,
-            editor
-        ])
+        
         let splitter = new MSplitter (this, "horizontal", undefined, true,
             createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
                 tree.render()
             ]),
-            editorparent
+            this.engine.render()
         )
         splitter.sizes = [ 400, 0 ];
         this.element = createElement("div", {}, "h-full", [
@@ -68,10 +63,11 @@ class HomeProjectPage extends ProjectPage {
 }
 
 class ProjectComponent extends Component {
-    constructor (parent, project_page) {
+    constructor (parent, project_page, engine) {
         super(parent);
+        this.engine = new WebEngine(this.component);
 
-        this.project_page = (new project_page(this)).render();
+        this.project_page = (new project_page(this, this.engine)).render();
         this.prompt       = new MPromptManager();
     }
 

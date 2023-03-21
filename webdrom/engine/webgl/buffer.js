@@ -1,21 +1,105 @@
 
+function flatten (result, tensor) {
+    for (let tens of tensor) {
+        if (tens instanceof Array) {
+            flatten(result, tens);
+        } else result.push(tens);
+    }
+}
+function shape (result, tensor) {
+    if (!(tensor instanceof Array)) return ;
+
+    result.push(tensor.length)
+    shape(result, tensor[0]);
+}
+
 class VAO {
-    constructor (context) {
-        this.context = context
+    constructor (context, tensor_array) {
+        this.context = context;
 
-        this.__gl_id = -1
-    }
+        this.vbos = []
 
-    init () {
-        this.__gl_id = this.context.glGenVertexArrays(1)
+        this.offset = 0;
+        this.shape  = [];
+        shape(this.shape, tensor_array);
+        if (this.shape.length != 3) throw 'VAO tensor should have shape of size 3';
+
+        this.vertexCount = this.shape[1];
+        
+        let tensor_idx = 0;
+        for (let tensor of tensor_array) {
+            this.vbos.push(new VBO(context, tensor));
+
+            tensor_idx ++;
+        }
     }
-    load () {
-        this.context.glBindVertexArray()
+    render () {
+        this.context.drawArrays(
+            this.context.TRIANGLE_STRIP, this.offset, this.vertexCount);
     }
 }
 
 class VBO {
-    constructor (context) {
+    constructor (context, tensor, type=undefined) {
+        this.context = context;
 
+        this.data = []
+        flatten(this.data, tensor);
+
+        this.__gl_id = this.context.createBuffer();
+        this.context.bindBuffer(this.context.ARRAY_BUFFER, this.__gl_id);
+
+        this.shape = []
+        shape(this.shape, tensor)
+
+        if (this.shape.length != 2) throw 'VBO Tensor should have length 2';
+        this.size         = this.shape[1];
+        this.vertex_count = this.shape[0];
+        this.offset       = 0;
+        this.normalize    = false;
+
+        if (type === undefined) {
+            this.type = this.context.FLOAT;
+            this.context.bufferData(this.context.ARRAY_BUFFER,
+                new Float32Array(this.data),
+                this.context.STATIC_DRAW);
+        }
+        else throw 'Error nothing other than float VBO implemented'
+    }
+    apply_to_shader (shader, metadata) {
+        this.context.bindBuffer(this.context.ARRAY_BUFFER, this.__gl_id);
+        this.context.vertexAttribPointer(
+            metadata.location,
+            this.size,
+            this.type,
+            this.normalize,
+            0,
+            this.offset);
+        this.context.enableVertexAttribArray(
+            metadata.location
+        );
+    }
+}
+
+class EBO {
+    constructor (context, data) {
+        this.context = context;
+        this.data    = data;
+
+        this.init();
+    }
+
+    init () {
+        this.__gl_id = this.context.createBuffer();
+        this.use();
+
+        this.context.bufferData(
+            this.context.ELEMENT_ARRAY_BUFFER,
+            new Uint16Array(this.data),
+            this.context.STATIC_DRAW
+          );
+    }
+    use () {
+        this.context.bindBuffer(this.context.ELEMENT_ARRAY_BUFFER, this.__gl_id);
     }
 }

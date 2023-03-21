@@ -43,7 +43,13 @@ class ShaderProgram {
         let t_v = this.init();
         if (t_v === null) return null;
 
+        this.vbo_targets = {}
+
         return new Proxy(this, {
+            get: (target, str) => {
+                if (this.attribute_locations[str] === undefined)
+                    return target[str];
+            },
             set: (target, str, val) => {
                 if (this.attribute_locations[str] === undefined) {
                     target[str] = val;
@@ -51,10 +57,41 @@ class ShaderProgram {
                 }
 
                 let metadata = this.attribute_metadatas[str]
-                console.log(metadata, context)
+                const buffer_data = { metadata: metadata, location: this.attribute_locations[str] }
+                
+                if (val instanceof VBO)
+                    val.apply_to_shader(this, buffer_data);
+
                 return true;
             }
         })
+    }
+
+    use () {
+        this.context.useProgram(this.__gl_id);
+    }
+    addTarget (name, vbo_id) {
+        this.vbo_targets[name] = vbo_id;
+    }
+    render (vao, ebo = undefined) {
+        for (let name in this.vbo_targets) {
+            let target = this.vbo_targets[name];
+
+            this[name] = vao.vbos[target];
+        }
+
+        this.use();
+        if (ebo === undefined) {
+            vao.render();
+        } else {
+            ebo.use();
+            this.context.drawElements(
+                this.context.TRIANGLES, 
+                ebo.data.length, 
+                this.context.UNSIGNED_SHORT, 
+                0
+            );
+        }
     }
 
     init () {

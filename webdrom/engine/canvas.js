@@ -8,7 +8,12 @@ class WebGLCanvas extends Component {
     }
 
     _first_render () {
-        this.canvas = createElement("canvas", {}, "", []);
+        this.canvas = createElement("canvas", {}, "w-full h-full", []);
+        this.component = createElement("div", {}, "w-full", [
+            createElement("div", {}, "w-full h-full overflow-none", [
+                this.canvas
+            ])
+        ]);
 
         this.make_gl();
 
@@ -61,6 +66,6 @@ class WebGLCanvas extends Component {
         }
     }
     _render () {
-        return this.canvas;
+        return this.component;
     }
 }

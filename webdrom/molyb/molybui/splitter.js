@@ -177,7 +177,7 @@ class MSplitter extends Component {
         for (let component of this.components) {
             component.style[this.field]    = `${this.sizes[idx]}px`;
             component.style[this.maxField] = `${this.sizes[idx ++]}px`;
-            component.style.overflow       = "scroll";
+            component.style.overflow       = "auto";
         }
 
         if (!this.absolute_separator) return ;

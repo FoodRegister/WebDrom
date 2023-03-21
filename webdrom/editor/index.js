@@ -45,16 +45,23 @@ class HomeProjectPage extends ProjectPage {
         ] });
         let config   = undefined
         
+        let splitter1 = new MSplitter(this, "vertical", undefined, true, 
+            this.engine.render(),
+            createElement("div", {}, "", [])
+        );
         let splitter = new MSplitter (this, "horizontal", undefined, true,
             createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
                 tree.render()
             ]),
-            this.engine.render()
+            splitter1.render()
         )
         let splitter_viewport = new ViewportComponent(
-            this, splitter, 0, 7
+            this, splitter, 0, 21
         )
-        splitter.sizes = [ 400, 0 ];
+        splitter.sizes     = [ 400, 0 ];
+        splitter1.sizes    = [ 300, 300 ];
+        splitter.collapse  = [ true, false ];
+        splitter1.collapse = [ false, false ];
         this.element = createElement("div", {}, "h-full", [
             splitter_viewport.render()
         ])

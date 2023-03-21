@@ -51,9 +51,12 @@ class HomeProjectPage extends ProjectPage {
             ]),
             this.engine.render()
         )
+        let splitter_viewport = new ViewportComponent(
+            this, splitter, 0, 7
+        )
         splitter.sizes = [ 400, 0 ];
         this.element = createElement("div", {}, "h-full", [
-            splitter.render()
+            splitter_viewport.render()
         ])
     }
 

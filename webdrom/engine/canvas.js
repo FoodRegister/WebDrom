@@ -37,11 +37,12 @@ class WebGLCanvas extends Component {
         this.shader.addTarget("aVertexPosition", 0);
         this.shader.addTarget("aVertexColor", 1);
 
-        this.cube = new VAO(this.web_gl, [
-            [ [0.5, 0.5], [-0.5, 0.5], [0.5, -0.5], [-0.5, -0.5], [0.75, -0.5] ],
-            [ [1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0], [0, 0.5, 0.5] ]
-        ]);
-        this.ebo = new EBO(this.web_gl,
+        this.cube = new Mesh(
+            this.web_gl,
+            [
+                [ [0.5, 0.5], [-0.5, 0.5], [0.5, -0.5], [-0.5, -0.5], [0.75, -0.5] ],
+                [ [1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0], [0, 0.5, 0.5] ]
+            ],
             [ 0, 1, 2, 1, 2, 3, 1, 2, 4 ]
         )
     }
@@ -51,8 +52,8 @@ class WebGLCanvas extends Component {
         this.web_gl.enable(this.web_gl.DEPTH_TEST);
         this.web_gl.depthFunc(this.web_gl.LEQUAL);
         this.web_gl.clear(this.web_gl.COLOR_BUFFER_BIT | this.web_gl.DEPTH_BUFFER_BIT);
-
-        this.shader.render(this.cube, this.ebo);
+        
+        this.cube.render(this.shader);
     }
     onResize (event_array) {
         for (let event of event_array) {

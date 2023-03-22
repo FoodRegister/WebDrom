@@ -103,3 +103,36 @@ class EBO {
         this.context.bindBuffer(this.context.ELEMENT_ARRAY_BUFFER, this.__gl_id);
     }
 }
+
+class Vector { use_in_uniform (shader, metadata) { throw 'Default vector isn\'t implemented' } }
+
+class WebGLFloat extends Vector {
+    constructor (x) {
+        super();
+        this.x = x;
+    }
+    use_in_uniform (shader, metadata) {
+        shader.context.uniform1f( metadata.location, this.x );
+    }
+}
+class Vec2 extends Vector {
+    constructor (x, y) {
+        super();
+        this.x = x;
+        this.y = y;
+    }
+    use_in_uniform (shader, metadata) {
+        shader.context.uniform2f( metadata.location, this.x, this.y );
+    }
+};
+class Vec3 extends Vector {
+    constructor (x, y, z) {
+        super();
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    use_in_uniform (shader, metadata) {
+        shader.context.uniform3f( metadata.location, this.x, this.y, this.z );
+    }
+};

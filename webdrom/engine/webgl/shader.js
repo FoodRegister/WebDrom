@@ -51,17 +51,28 @@ class ShaderProgram {
                     return target[str];
             },
             set: (target, str, val) => {
-                if (this.attribute_locations[str] === undefined) {
-                    target[str] = val;
+                if (this.attribute_locations[str] !== undefined) {
+                    let metadata = this.attribute_metadatas[str]
+                    const buffer_data = { metadata: metadata, location: this.attribute_locations[str] }
+                    
+                    if (val instanceof VBO)
+                        val.apply_to_shader(this, buffer_data);
+                    else throw 'Could not recognize val type';
+
+                    return true;
+                }
+                if (this.uniform_locations[str] !== undefined) {
+                    let metadata = this.uniform_metadatas[str];
+                    const buffer_data = { metadata: metadata, location: this.uniform_locations[str] }
+
+                    if (val instanceof Vector) {
+                        val.use_in_uniform(this, buffer_data);
+                    } else throw 'Could not recognize val type';
+                    
                     return true;
                 }
 
-                let metadata = this.attribute_metadatas[str]
-                const buffer_data = { metadata: metadata, location: this.attribute_locations[str] }
-                
-                if (val instanceof VBO)
-                    val.apply_to_shader(this, buffer_data);
-
+                target[str] = val;
                 return true;
             }
         })
@@ -78,6 +89,7 @@ class ShaderProgram {
             let target = this.vbo_targets[name];
 
             this[name] = vao.vbos[target];
+            this.context.enableVert
         }
 
         this.use();
@@ -114,11 +126,23 @@ class ShaderProgram {
         this.attributes          = []
         for (let idx = 0; idx < attribCount; idx ++) {
             let data = this.context.getActiveAttrib(this.__gl_id, idx);
-            console.log(this.context.getActiveAttrib(this.__gl_id, idx))
 
             this.attribute_locations[data.name] = this.context.getAttribLocation(this.__gl_id, data.name);
             this.attribute_metadatas[data.name] = data
             this.attributes.push(data.name)
+        }
+        
+        let uniformCount = this.context.getProgramParameter(this.__gl_id, this.context.ACTIVE_UNIFORMS);
+        
+        this.uniform_locations = {}
+        this.uniform_metadatas = {}
+        this.uniforms          = []
+        for (let idx = 0; idx < uniformCount; idx ++) {
+            let data = this.context.getActiveUniform(this.__gl_id, idx);
+            
+            this.uniform_locations[data.name] = this.context.getUniformLocation(this.__gl_id, data.name);
+            this.uniform_metadatas[data.name] = data
+            this.uniforms.push(data.name);
         }
 
         return this;

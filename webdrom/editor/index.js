@@ -38,29 +38,45 @@ class HomeProjectPage extends ProjectPage {
     }
 
     _first_render () {
-        let tree     = new MExplorer (this, { "text": "Explorer", "components": [
+        let transform_editor = new TransformEditorComponent(this);
+        document.addEventListener("WebDrom.MeshInstance.Clicked", (event) => {
+            transform_editor.setTarget(event.meshInstance?.transform);
+        });
+
+        let tree = new MExplorer (this, { "text": "Explorer", "components": [
             { "text": "Project", "component": (parent) => new FileTree(parent).render(), "icons": []  },
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
             { "text": "Level", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
         ] });
+        let property_tree = new MExplorer(this, {
+            "text": "Properties",
+            "components": [
+                { "text": "Transform", "component": (parent) => transform_editor.render() },
+                { "text": "Material", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render() },
+            ]
+        }, false)
         let config   = undefined
         
         let splitter1 = new MSplitter(this, "vertical", undefined, true, 
             this.engine.render(),
             createElement("div", {}, "", [])
-        );
+        )
         let splitter = new MSplitter (this, "horizontal", undefined, true,
             createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
                 tree.render()
             ]),
-            splitter1.render()
+            splitter1.render(),
+            createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
+                property_tree.render()
+            ])
         )
         let splitter_viewport = new ViewportComponent(
             this, splitter, 0, 21
         )
-        splitter.sizes     = [ 400, 0 ];
+        splitter.sizes     = [ 300, 400, 300 ];
         splitter1.sizes    = [ 300, 300 ];
-        splitter.collapse  = [ true, false ];
+        splitter.min_sizes = [ 200, 400, 200 ];
+        splitter.collapse  = [ true, false, true ];
         splitter1.collapse = [ false, false ];
         this.element = createElement("div", {}, "h-full", [
             splitter_viewport.render()

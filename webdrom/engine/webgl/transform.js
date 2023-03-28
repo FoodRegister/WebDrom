@@ -39,9 +39,9 @@ class Transform {
         glMatrix.mat4.translate(matrix, matrix, [ this.__x,  this.__y,  this.__z  ]);
         glMatrix.mat4.scale    (matrix, matrix, [ this.__sx, this.__sy, this.__sz ]);
 
-        glMatrix.mat4.rotateX  (matrix, matrix, this.__rx);
-        glMatrix.mat4.rotateY  (matrix, matrix, this.__ry);
-        glMatrix.mat4.rotateZ  (matrix, matrix, this.__rz);
+        glMatrix.mat4.rotateX  (matrix, matrix, this.__rx / 180.0 * Math.PI);
+        glMatrix.mat4.rotateY  (matrix, matrix, this.__ry / 180.0 * Math.PI);
+        glMatrix.mat4.rotateZ  (matrix, matrix, this.__rz / 180.0 * Math.PI);
 
         this.__matrix = matrix;
 

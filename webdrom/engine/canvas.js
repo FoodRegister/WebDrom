@@ -58,8 +58,8 @@ class WebGLCanvas extends Component {
             ],
             [ 0, 1, 2, 1, 2, 3 ]
         )
-        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, Math.PI, 2, 1, 1))
-        this.cube2 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, Math.PI / 40, Math.PI, 1, 2, 1))
+        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 2, 1, 1))
+        this.cube2 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 1, 2, 1))
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -129,7 +129,11 @@ class WebGLCanvas extends Component {
     }
     onClick (event) {
         let mesh_instance = this.runPixelComputations([ [ event.layerX, event.layerY ] ])[0];
-        console.log(mesh_instance)
+        
+        let c_event = new CustomEvent( "WebDrom.MeshInstance.Clicked", {} );
+        c_event.meshInstance = mesh_instance;
+
+        document.dispatchEvent(c_event);
     }
 
     onResize (event_array) {

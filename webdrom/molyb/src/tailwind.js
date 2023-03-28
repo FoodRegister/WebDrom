@@ -351,6 +351,7 @@ class _Tailwind {
         const custom = this.to_custom(style);
         const variable = this.to_var(style)
 
+        if (style == "none") return `background-color: transparent;`
         if (color) return `background-color: ${color};`
         if (custom) return `background: ${custom};`
         if (variable) return `background-color: ${variable};`
@@ -361,6 +362,7 @@ class _Tailwind {
         const size = this.to_size(style);
         const color = this.to_color(style);
         const custom = this.to_custom(style);
+        const variable = this.to_var(style)
 
         if (style == "center")  return "text-align: center;"
         if (style == "left")    return "text-align: left;"
@@ -368,6 +370,7 @@ class _Tailwind {
         if (style == "justify") return "text-align: justify;"
         if (color) return `color: ${color};`
         if (custom) return `color: ${custom};`
+        if (variable) return `color: ${variable};`
         if (size) return `font-size: ${size * 2 + 10}px; line-height: ${size < 5 ? 0.25 * size + 0.75 : 0.17 * size + 0.75}rem;`
 
         console.log(`Unhandled style for text property "${style}"`)

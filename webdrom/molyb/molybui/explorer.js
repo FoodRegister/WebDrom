@@ -169,10 +169,11 @@ class __MExplorer_Splitter extends MSplitter {
 }
 
 class MExplorer extends Component {
-    constructor (parent, config) {
+    constructor (parent, config, use_button = true) {
         super(parent);
 
         this.config = config;
+        this.use_button = use_button;
         this._first_render();
     }
 
@@ -196,7 +197,7 @@ class MExplorer extends Component {
                 createElement("p", {}, "text-base uppercase", [ this.config.text ]),
                 createElement("div", {}, "flex-1", []),
                 // TODO find what to do with this button
-                createElement("div", {}, "material-icons-outlined font-200", [ "info" ])
+                ...(this.use_button ? [ createElement("div", {}, "material-icons-outlined font-200", [ "info" ]) ] : [])
             ]),
             createElement("div", {}, "flex-1", [
                 splitter.render()

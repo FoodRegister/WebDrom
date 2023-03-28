@@ -20,14 +20,25 @@ class WebGLCanvas extends Component {
         this.observer = new ResizeObserver( (event) => this.onResize(event) )
         this.observer.observe(this.canvas);
     }
+    make_projection () {
+        const fov = 45 * Math.PI / 180;
+        const asp = this.canvas.clientWidth / this.canvas.clientHeight;
+        const zNr = 0.1;
+        const zFr = 100.0;
+        
+        this.web_gl.projection = new PerspectiveTransform(fov, asp, zNr, zFr);
+    }
     make_gl () {
         this.web_gl = new ExtendedWebGLContext(this.canvas.getContext("webgl"))
-        this.shader = this.web_gl.loadProgram(`attribute vec2 aVertexPosition;
+        this.make_projection();
+        this.shader = this.web_gl.loadProgram(`attribute vec3 aVertexPosition;
         attribute vec3 aVertexColor;
+        uniform mat4 mModel;
+        uniform mat4 mProj;
         varying lowp vec4 vColor;
         
         void main(void) {
-          gl_Position = vec4(aVertexPosition, 0.0, 1.0);
+          gl_Position = mProj * mModel * vec4(aVertexPosition, 1.0);
           vColor = vec4(aVertexColor, 1.0);
         }`, `varying lowp vec4 vColor;
         
@@ -37,14 +48,18 @@ class WebGLCanvas extends Component {
         this.shader.addTarget("aVertexPosition", 0);
         this.shader.addTarget("aVertexColor", 1);
 
-        this.cube = new MeshInstance(this.web_gl, new Mesh(
+        const mu_z = -12;
+
+        this.mesh = new Mesh(
             this.web_gl,
             [
-                [ [0.5, 0.5], [-0.5, 0.5], [0.5, -0.5], [-0.5, -0.5], [0.75, -0.5] ],
-                [ [1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0], [0, 0.5, 0.5] ]
+                [ [0.5, 0.5, mu_z], [-0.5, 0.5, mu_z], [0.5, -0.5, mu_z], [-0.5, -0.5, mu_z] ],
+                [ [1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0] ]
             ],
-            [ 0, 1, 2, 1, 2, 3, 1, 2, 4 ]
-        ))
+            [ 0, 1, 2, 1, 2, 3 ]
+        )
+        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, Math.PI, 2, 1, 1))
+        this.cube2 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, Math.PI / 40, Math.PI, 1, 2, 1))
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -55,14 +70,16 @@ class WebGLCanvas extends Component {
     }
     drawCallback () {
         this.clear();
-        this.cube.render(this.shader);
+        this.cube1.render(this.shader);
+        this.cube2.render(this.shader);
     }
 
     runPixelComputations (pixel_array) {
         this.raytracer = new RayTracer();
         
         this.clear();
-        this.cube.renderRTS(this.raytracer);
+        this.cube1.renderRTS(this.raytracer);
+        this.cube2.renderRTS(this.raytracer);
 
         let buffer = this.getBuffer();
 
@@ -121,6 +138,8 @@ class WebGLCanvas extends Component {
 
             this.canvas.setAttribute( "width",  event.contentRect.width  );
             this.canvas.setAttribute( "height", event.contentRect.height );
+
+            this.make_projection();
             
             this.web_gl.viewport( 0, 0, event.contentRect.width, event.contentRect.height );
             this.engine.drawCallback();

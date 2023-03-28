@@ -67,6 +67,8 @@ class ShaderProgram {
 
                     if (val instanceof Vector) {
                         val.use_in_uniform(this, buffer_data);
+                    } else if (val instanceof Transform) {
+                        val.use_in_uniform(this, buffer_data);
                     } else throw 'Could not recognize val type';
                     
                     return true;

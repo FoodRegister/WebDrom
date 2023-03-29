@@ -26,15 +26,13 @@ const TEST_MTREE_CONFIG = {
         }
     ]
 }
+const left_onglet = 60;
 
 class HomeProjectPage extends ProjectPage {
     constructor (parent, engine) {
         super(parent, engine);
 
         this._first_render();
-    }
-    clicked(onglet){
-        console.log("hi")
     }
 
     _first_render () {
@@ -71,7 +69,6 @@ class HomeProjectPage extends ProjectPage {
             ])
         )
 
-        const left_onglet = 60;
         let splitter_viewport = new ViewportComponent(
             this, splitter, left_onglet, 21
         )
@@ -80,19 +77,7 @@ class HomeProjectPage extends ProjectPage {
         splitter.min_sizes = [ 200, 400, 200 ];
         splitter.collapse  = [ true, false, true ];
         splitter1.collapse = [ false, false ];
-        this.element = createElement("div", {}, "h-full flex", [
-            createElement("div", {}, `w-[${left_onglet}px]`, [
-                createElement("div", [], "cursor-pointer p-[14px] h-15 relative", [
-                    createElement("div", [], "absolute left-0 top-0 w-[2px] bg-Vwebdrom-editor-text h-full"),
-                    createIcon("desktop_windows", "icon-32")
-                ]),
-                createElement("div", [], "cursor-pointer p-[14px] h-15", [
-                    createIcon("content_copy", "icon-32")
-                ]),
-                createElement("div", [], "cursor-pointer p-[14px] h-15", [
-                    createIcon("schema", "icon-32")
-                ])
-            ]),
+        this.element = createElement("div", {}, "h-full", [
             splitter_viewport.render()
         ])
     }
@@ -107,15 +92,54 @@ class ProjectComponent extends Component {
         super(parent);
         this.engine = new WebEngine(this.component);
 
-        this.project_page = (new project_page(this, this.engine)).render();
-        this.prompt       = new MPromptManager();
+        this.project_pages = {  }
+    
+        this.setPage(project_page, false);
+        this.prompt = new MPromptManager();
+    }
+    setPage (project_type, render = true) {
+        if (this.project_main === project_type) return ;
+
+        try {
+            if (this.project_pages[project_type] === undefined)
+                this.project_pages[project_type] = (new project_type(this, this.engine)).render();
+        } catch (e) {
+            project_type();
+            throw 'No error message';
+        }
+
+        this.project_main = project_type;
+        this.project_page = this.project_pages[project_type];
+
+        if (render) this.render(false);
     }
 
+    createColorElement (condition) {
+        if (condition) return [ createElement("div", [], "absolute left-0 top-0 w-[2px] bg-Vwebdrom-editor-text h-full") ]
+        return [ ]
+    }
+    createIcon (project_type, icon) {
+        let element = createElement("div", [], "cursor-pointer p-[14px] h-15 relative", [
+            ...this.createColorElement(this.project_main === project_type),
+            createIcon(icon, "icon-32")
+        ])
+
+        element.onclick = (ev) => {
+            this.setPage( project_type );
+        }
+
+        return element;
+    }
     _render () {
-        return createElement("div", {}, "flex-1", [
+        return createElement("div", {}, "flex-1 flex", [
+            createElement("div", {}, `w-[${left_onglet}px]`, [
+                this.createIcon( HomeProjectPage, "desktop_windows" ),
+                this.createIcon( (...a) => { throw 'TextEditorPage not developped'; }, "content_copy" ),
+                this.createIcon( MGraph, "schema" ),
+            ]),
             this.project_page,
             this.prompt.render()
-        ])
+        ]);
     }
 }
 
@@ -127,8 +151,8 @@ class Project {
 
         this.page = page;
         this.component = new ProjectComponent(undefined, page);
-
-        this.body.appendChild(this.component.render())
+        this.component.is_dom_root = true;
+        this.body.appendChild(this.component.render());
         
         document.dispatchEvent( customEvent )
     }

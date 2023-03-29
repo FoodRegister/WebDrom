@@ -150,6 +150,8 @@ class MSplitter extends Component {
     onresize (event) {
         event = event[0];
         let size = event.contentRect[this.field];
+        if (size === 0) return ;
+
         this.computeLastSize();
         let delta_size = size - this.last_size;
 

@@ -70,15 +70,29 @@ class HomeProjectPage extends ProjectPage {
                 property_tree.render()
             ])
         )
+
+        const left_onglet = 60;
         let splitter_viewport = new ViewportComponent(
-            this, splitter, 0, 21
+            this, splitter, left_onglet, 21
         )
-        splitter.sizes     = [ 300, 400, 300 ];
+        splitter.sizes     = [ 300, 800, 300 ];
         splitter1.sizes    = [ 300, 300 ];
         splitter.min_sizes = [ 200, 400, 200 ];
         splitter.collapse  = [ true, false, true ];
         splitter1.collapse = [ false, false ];
-        this.element = createElement("div", {}, "h-full", [
+        this.element = createElement("div", {}, "h-full flex", [
+            createElement("div", {}, `w-[${left_onglet}px]`, [
+                createElement("div", [], "cursor-pointer p-[14px] h-15 relative", [
+                    createElement("div", [], "absolute left-0 top-0 w-[2px] bg-Vwebdrom-editor-text h-full"),
+                    createIcon("desktop_windows", "icon-32")
+                ]),
+                createElement("div", [], "cursor-pointer p-[14px] h-15", [
+                    createIcon("content_copy", "icon-32")
+                ]),
+                createElement("div", [], "cursor-pointer p-[14px] h-15", [
+                    createIcon("schema", "icon-32")
+                ])
+            ]),
             splitter_viewport.render()
         ])
     }

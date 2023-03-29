@@ -9,9 +9,9 @@ class TransformEditorComponent extends Component {
     setTarget (target) {
         this.target = target;
         
-        this.pos.setValue(target.__x,  target.__y,  target.__z);
-        this.rot.setValue(target.__rx, target.__ry, target.__rz);
-        this.sca.setValue(target.__sx, target.__sy, target.__sz);
+        this.pos.setValue(target?.__x,  target?.__y,  target?.__z);
+        this.rot.setValue(target?.__rx, target?.__ry, target?.__rz);
+        this.sca.setValue(target?.__sx, target?.__sy, target?.__sz);
     }
 
     _first_render () {

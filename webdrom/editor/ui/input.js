@@ -42,10 +42,20 @@ class Vec3Input extends Component {
         this.x_input.value = x;
         this.y_input.value = y;
         this.z_input.value = z;
+
+        this.check(this.x_input, x);
+        this.check(this.y_input, y);
+        this.check(this.z_input, z);
+    }
+    check (input, value) {
+        if (value === undefined) input.setAttribute("disabled", "true");
+        else if (input.hasAttribute("disabled"))
+            input.removeAttribute("disabled");
     }
     make_input () {
         let input = createElement("input", {}, "bg-Vwebdrom-background text-Vwebdrom-editor-text p-2 rounded-8", []);
         input.setAttribute("type", "number");
+        input.setAttribute("disabled", "true");
 
         input.addEventListener("keyup",  () => this.onkey())
         input.addEventListener("change", () => this.onchange())

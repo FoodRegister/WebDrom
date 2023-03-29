@@ -69,38 +69,61 @@ class WebGLCanvas extends Component {
         this.web_gl.clear(this.web_gl.COLOR_BUFFER_BIT | this.web_gl.DEPTH_BUFFER_BIT);
     }
     drawCallback () {
+        this._runComputations();
+
         this.clear();
         this.cube1.render(this.shader);
         this.cube2.render(this.shader);
     }
 
-    runPixelComputations (pixel_array) {
+    _runComputations () {
+        if (this.pixel_computations === undefined) return ;
+
+        let buffer = this._make_tracer();
+
+        for (let [ pa, c ] of this.pixel_computations)
+            this._runPixelComputations(buffer, pa, c);
+        
+        this.pixel_computations = undefined;
+    }
+    _make_tracer () {
         this.raytracer = new RayTracer();
         
         this.clear();
         this.cube1.renderRTS(this.raytracer);
         this.cube2.renderRTS(this.raytracer);
 
-        let buffer = this.getBuffer();
-
+        return this.getBuffer();
+    }
+    _runPixelComputations (buffer, pixel_array, callback) {
         let res = [];
         for (let pixel of pixel_array) {
-            let pixel_color = buffer[buffer.length - 1 - pixel[1]][pixel[0]];
+            let pixel_color = buffer(pixel[1], pixel[0]);
             let mesh_instance = this.raytracer.getMeshInstance(pixel_color)
             
             res.push(mesh_instance);
         }
 
-        this.drawCallback();
+        callback(res);
 
         return res;
     }
+    runPixelComputations (pixel_array, callback) {
+        if (!this.hasPixelComputations()) this.pixel_computations = [];
+
+        this.pixel_computations.push([pixel_array, callback])
+    }
+    hasPixelComputations () {
+        return this.pixel_computations !== undefined;
+    }
+
     getBuffer (use_alpha = false) {
         let coef_alpha = use_alpha ? 1 : 0;
 
         const pixels = new Uint8Array(
             this.web_gl.drawingBufferWidth * this.web_gl.drawingBufferHeight * 4
         );
+        
         this.web_gl.readPixels(
             0,
             0,
@@ -111,29 +134,29 @@ class WebGLCanvas extends Component {
             pixels
         );
         
-        let table = [];
-        for (let i = 0; i < this.web_gl.drawingBufferHeight; i ++) {
-            let array = [];
-            for (let j = 0; j < this.web_gl.drawingBufferWidth; j ++) {
-                let start = (this.web_gl.drawingBufferWidth * i + j) * 4;
+        let width  = this.web_gl.drawingBufferWidth;
+        let height = this.web_gl.drawingBufferHeight;
+        let table = (x, y) => {
+            x = height - 1 - x;
+            let start = 4 * ( width * x + y );
 
-                let x = pixels[start] + pixels[start + 1] * 256
-                      + pixels[start + 2] * 256 * 256
-                      + (pixels[start + 3] * 256 * 256 * 256) * coef_alpha;
-                array.push(x);
-            }
-            table.push(array);
-        }
+            let res = pixels[start] + pixels[start + 1] * 256
+            + pixels[start + 2] * 256 * 256
+            + (pixels[start + 3] * 256 * 256 * 256) * coef_alpha;
+            return res;
+        };
 
         return table;
     }
     onClick (event) {
-        let mesh_instance = this.runPixelComputations([ [ event.layerX, event.layerY ] ])[0];
+        this.runPixelComputations([ [ event.layerX, event.layerY ] ], (mesh_array) => {
+            let mesh_instance = mesh_array[0];    
         
-        let c_event = new CustomEvent( "WebDrom.MeshInstance.Clicked", {} );
-        c_event.meshInstance = mesh_instance;
+            let c_event = new CustomEvent( "WebDrom.MeshInstance.Clicked", {} );
+            c_event.meshInstance = mesh_instance;
 
-        document.dispatchEvent(c_event);
+            document.dispatchEvent(c_event);
+        });
     }
 
     onResize (event_array) {

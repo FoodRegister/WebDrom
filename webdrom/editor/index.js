@@ -100,13 +100,8 @@ class ProjectComponent extends Component {
     setPage (project_type, render = true) {
         if (this.project_main === project_type) return ;
 
-        try {
-            if (this.project_pages[project_type] === undefined)
-                this.project_pages[project_type] = (new project_type(this, this.engine)).render();
-        } catch (e) {
-            project_type();
-            throw 'No error message';
-        }
+        if (this.project_pages[project_type] === undefined)
+            this.project_pages[project_type] = (new project_type(this, this.engine)).render();
 
         this.project_main = project_type;
         this.project_page = this.project_pages[project_type];

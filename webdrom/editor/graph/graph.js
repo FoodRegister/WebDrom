@@ -1,11 +1,25 @@
 
-function append_drag_listener (element, callback, end_callback = undefined) {
+class Scalar {
+    constructor (sc) {
+        this.sc = sc;
+    }
+    compute (v) {
+        return this.sc * v;
+    }
+    modify (v) {
+        this.sc = v;
+    }
+}
+
+function append_drag_listener (scalar, element, callback, end_callback = undefined) {
     let integralX = 0;
     let integralY = 0;
     element.setAttribute("useDrag", "true");
 
     element.addEventListener("mousedown", (event) => {
         let target = event.target;
+        if (target.hasAttribute("nodrag")) return ;
+
         while (target && (!target.hasAttribute("useDrag"))) target = target.parentNode;
         if (target != element) return ;
 
@@ -13,10 +27,10 @@ function append_drag_listener (element, callback, end_callback = undefined) {
         
         document.onmousemove = (event) => {
             let x = event.clientX; let y = event.clientY;
-            integralX += x - sx;
-            integralY += y - sy;
+            integralX += scalar.compute(x - sx);
+            integralY += scalar.compute(y - sy);
 
-            callback(x - sx, y - sy, integralX, integralY, (ix, iy) => {
+            callback(scalar.compute(x - sx), scalar.compute(y - sy), integralX, integralY, (ix, iy) => {
                 integralX = ix;
                 integralY = iy;
             });
@@ -53,6 +67,9 @@ class MGraph extends Component {
     constructor (parent, engine) {
         super(parent);
 
+        this.scale = 2;
+        this.scala = new Scalar(2);
+
         this.nodes = [ new MNode(this, "Default MNode", 200, 200, [
             new MNode_Ressource(this, this, "Input 1", "float", "#7DAF9C"),
             new MNode_Ressource(this, this, "Input 2", "int",   "#0A2472")
@@ -81,29 +98,48 @@ class MGraph extends Component {
     ressource_end_hover () {
         this.current_ressource = undefined;
     }
+    use_scale (scale) {
+        this.scale = scale;
+        this.scala.modify(this.scale);
+
+        this.element.style.transform = `scale(calc(1 / ${this.scale}))`;
+        this.element.style.width     = `calc(${this.scale} * 100%)`
+        this.element.style.height    = `calc(${this.scale} * 100%)`
+        this.element.style.left      = `calc(-1 * ${this.scale - 1} * 50%)`
+        this.element.style.top       = `calc(-1 * ${this.scale - 1} * 50%)`
+        this.bg_element.style.width     = `calc(${this.scale} * (100% + 4 * var(--webdrom-editor-graph-grid-size)))`
+        this.bg_element.style.height    = `calc(${this.scale} * (100% + 4 * var(--webdrom-editor-graph-grid-size)))`
+        this.bg_element.style.left      = `calc(${this.scale} * (- 2 * var(--webdrom-editor-graph-grid-size)))`
+        this.bg_element.style.top       = `calc(${this.scale} * (- 2 * var(--webdrom-editor-graph-grid-size)))`
+    
+        this.bg_element.style.backgroundImage = `linear-gradient(var(--webdrom-editor-graph-border) .${this.scale}em, transparent .${this.scale}em), linear-gradient(90deg, var(--webdrom-editor-graph-border) .${this.scale}em, transparent .${this.scale}em)`
+        this.bg_element.style.backgroundSize  = `calc(${this.scale} * var(--webdrom-editor-graph-grid-size)) calc(${this.scale} * var(--webdrom-editor-graph-grid-size))`
+    }
     _first_render () {
         this.bg_element = createElement("div", {}, "w-full h-full absolute forward-grid-background", []);
-        this.element = createElement("div", {}, "w-full h-full relative overflow-hidden", [
+        this.element = createElement("div", {}, "w-full h-full absolute overflow-hidden", [
             this.bg_element,
             ...(this.nodes.map((x) => x.render()))
         ]);
 
-        append_drag_listener(this.bg_element, (dx, dy, ix, iy, modify) => {
+        this.use_scale(1);
+
+        append_drag_listener(this.scala, this.bg_element, (dx, dy, ix, iy, modify) => {
             ix = cap(ix, - 2000, 2000); // TODO dynamic left and right border
             iy = cap(iy, - 2000, 2000); // TODO dynamic left and right border
 
             for (let node of this.nodes) node.setBackground(ix, iy);
             modify(ix, iy);
 
-            ix = neg_mod(ix, GRAPH_BACKGROUND_TILING)
-            iy = neg_mod(iy, GRAPH_BACKGROUND_TILING)
+            ix = neg_mod(ix, this.scale * GRAPH_BACKGROUND_TILING)
+            iy = neg_mod(iy, this.scale * GRAPH_BACKGROUND_TILING)
 
-            this.bg_element.style.left = `${ix - 2 * GRAPH_BACKGROUND_TILING}px`;
-            this.bg_element.style.top  = `${iy - 2 * GRAPH_BACKGROUND_TILING}px`;
+            this.bg_element.style.left = `${ix - this.scale * 2 * GRAPH_BACKGROUND_TILING}px`;
+            this.bg_element.style.top  = `${iy - this.scale * 2 * GRAPH_BACKGROUND_TILING}px`;
         });
     }
     _render () {
-        return this.element;
+        return createElement("div", {}, "w-full h-full relative", [ this.element ]);
     }
 }
 
@@ -132,18 +168,18 @@ class MNode_Ressource extends Component {
     }
     removeChild (child) {
         this.childs.delete(child);
-        this.setDebugColor();
+        this.computeLine();
     }
     appendChild (child) {
         this.childs.add(child);
-        this.setDebugColor();
+        this.computeLine();
     }
     appendParent (parent) {
         if (parent === undefined) {
             if (this.parent) this.parent.removeChild(this);
 
             this.parent = undefined;
-            this.setDebugColor();
+            this.computeLine();
             return ;
         }
 
@@ -154,29 +190,54 @@ class MNode_Ressource extends Component {
 
         this.parent = parent;
         this.parent.appendChild(this);
-        this.setDebugColor();
+        this.computeLine();
     }
-    setDebugColor () {
-        let is_debug = ((!this.is_output) && (this.parent !== undefined))
-                    || (this.is_output && this.childs.size != 0);
-        console.log(is_debug, this.parent, this.childs, this.is_output);
-        let color = is_debug ? "#6c6c6c" : this.color;
+    computeLine () {
+        if (this.parent === undefined) {
+            this.line.x = 0;
+            this.line.y = 0;
+            this.line.update_line();
 
-        this.bubble.style.backgroundColor = color;
+            return ;
+        }
+
+        let p0 = this.get_bubble_position();
+        let p1 = this.parent.get_bubble_position();
+
+        this.line.x =    p1[0] - p0[0];
+        this.line.y = - (p1[1] - p0[1]);
+        this.line.update_line();
     }
     clear () {
         for (let child of this.childs) child.appendParent(undefined);
         if (this.parent) this.appendParent(undefined);
     }
 
+    get_bubble_position () {
+        return [
+            this.bubble                          .offsetLeft
+          + this.bubble.offsetParent             .offsetLeft
+          + this.bubble.offsetParent.offsetParent.offsetLeft,
+            this.bubble                          .offsetTop
+          + this.bubble.offsetParent             .offsetTop
+          + this.bubble.offsetParent.offsetParent.offsetTop
+        ]
+    }
+
     _first_render () {
-        this.bubble  = createElement("div", {}, `acenter-h ${this.is_output ? "right" : "left"}-[-20px] rounded-200 w-2 h-2`, []);
+        this.line = new MLine(this, 0, 0, this.color);
+
+        this.bubble  = createElement("div", {}, `acenter-h ${this.is_output ? "right" : "left"}-[-20px] rounded-200 w-2 h-2`, [
+            createElement("div", {}, "relative w-[0px] h-[0px] acenter", [
+                this.line.render()
+            ])
+        ]);
         this.bubble.style.backgroundColor = this.color;
 
         this.element = createElement("div", {}, "relative", [
             createElement("div", {}, "select-none text-sm font-300", [
                 this.bubble,
-                createElement("div", {}, `absolute h-[100%] w-6 ${this.is_output ? "right-[-24px]" : "left-[-24px]"}`, []),
+                //createElement("div", {}, `absolute h-[100%] w-6 ${this.is_output ? "right-[-24px]" : "left-[-24px]"}`, []),
                 this.name
             ])
         ]);
@@ -185,12 +246,23 @@ class MNode_Ressource extends Component {
             this.element.addEventListener("mouseover", (event) => this.graph.ressource_hover(this));
             this.element.addEventListener("mouseout", (event) => this.graph.ressource_end_hover());
         } else {
-            append_drag_listener(this.element, (dx, dy, ix, iy) => {  }, (ix, iy) => {
-                let input  = this;
-                let output = this.graph.current_ressource;
-                if (!output) return ;
+            let sx = 0;
+            let sy = 0;
+            append_drag_listener(this.graph.scala, this.bubble, (dx, dy, ix, iy) => {
+                sx += dx; sy += dy;
+                this.line.x = sx; this.line.y = - sy;
+                this.line.update_line();
+            }, (ix, iy) => {
+                sx = 0; sy = 0;
+                this.line.x = 0;
+                this.line.y = 0;
+                this.line.update_line();
 
-                output.appendParent(input);
+                let output = this;
+                let input  = this.graph.current_ressource;
+                if (!input) return ;
+
+                input.appendParent(output);
             })
         }
 
@@ -240,11 +312,17 @@ class MNode extends Component {
             ])
         ]);
 
-        append_drag_listener(this.element, (dx, dy, ix, iy) => {
+        append_drag_listener(this.parent.scala, this.element, (dx, dy, ix, iy) => {
             this.x += dx;
             this.y += dy;
 
             this._use_delta();
+
+            for (let input of this.inputs)
+                input.computeLine();
+            for (let output of this.outputs)
+                for (let child of output.childs)
+                    child.computeLine();
         })
 
         this._use_delta();

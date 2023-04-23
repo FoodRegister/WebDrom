@@ -63,7 +63,7 @@
     --webdrom-editor-graph-border: var(--webdrom-background);
 
     --alert-gap: var(--multiplier-4);
-    --webdrom-editor-graph-grid-size: 25px;
+    --webdrom-editor-graph-grid-size: 45px;
 
     background-color: var(--webdrom-background);
     color: var(--webdrom-editor-text);

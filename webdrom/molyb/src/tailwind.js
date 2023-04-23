@@ -633,6 +633,15 @@ class _Tailwind {
     _tailwind_uppercase (style) {
         return "text-transform: uppercase;"
     }
+    _tailwind_select (style) {
+        if (style == "none") return "user-select: none;"
+        if (style == "auto") return "user-select: auto;"
+        if (style == "text") return "user-select: text;"
+        if (style == "all")  return "user-select: all;"
+
+        console.error("MTailwind [select] could not find style " + style);
+        return "user-select: auto"
+    }
 }
 
 const Tailwind = new _Tailwind();

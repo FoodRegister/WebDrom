@@ -121,7 +121,7 @@ class ProjectComponent extends Component {
     createIcon (project_type, icon) {
         let element = createElement("div", [], "cursor-pointer p-[14px] h-15 relative", [
             ...this.createColorElement(this.project_main === project_type),
-            createIcon(icon, "icon-32")
+            createIcon(icon, "select-none icon-32")
         ])
 
         element.onclick = (ev) => {

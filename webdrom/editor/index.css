@@ -59,7 +59,11 @@
     --webdrom-editor-text: #b2b2b2;
     --webdrom-editor-light-text: #d6d6d6;
 
+    --webdrom-editor-graph-background: var(--webdrom-contrast-light-background);
+    --webdrom-editor-graph-border: var(--webdrom-background);
+
     --alert-gap: var(--multiplier-4);
+    --webdrom-editor-graph-grid-size: 25px;
 
     background-color: var(--webdrom-background);
     color: var(--webdrom-editor-text);
@@ -361,4 +365,23 @@ input::-webkit-inner-spin-button {
 
 input[type=number] {
     -moz-appearance:textfield; /* Firefox */
+}
+
+.grid-background {
+    left: calc(- var(--webdrom-editor-graph-grid-size));
+    top : calc(- var(--webdrom-editor-graph-grid-size));
+    width:  calc(100% + 4 * var(--webdrom-editor-graph-grid-size));
+    height: calc(100% + 4 * var(--webdrom-editor-graph-grid-size));
+
+    background-color: var(--webdrom-editor-graph-background);
+    background-image: linear-gradient(var(--webdrom-editor-graph-border) .1em, transparent .1em), linear-gradient(90deg, var(--webdrom-editor-graph-border) .1em, transparent .1em);
+    background-size : var(--webdrom-editor-graph-grid-size) var(--webdrom-editor-graph-grid-size);
+}
+.grid-node {
+    min-width: 300px;
+    position: absolute;
+    background-color: var(--webdrom-light-background);
+}
+.grid-node > .grid-title {
+    background-color: var(--webdrom-background);
 }

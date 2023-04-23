@@ -98,6 +98,8 @@ class MGraph extends Component {
     ressource_end_hover () {
         this.current_ressource = undefined;
     }
+    // Should resize the canvas to a scale BUT do not use for pity
+    // it does not always properly works and hasn't been tested
     use_scale (scale) {
         this.scale = scale;
         this.scala.modify(this.scale);
@@ -237,7 +239,7 @@ class MNode_Ressource extends Component {
         this.element = createElement("div", {}, "relative", [
             createElement("div", {}, "select-none text-sm font-300", [
                 this.bubble,
-                //createElement("div", {}, `absolute h-[100%] w-6 ${this.is_output ? "right-[-24px]" : "left-[-24px]"}`, []),
+                createElement("div", {}, `absolute h-[100%] w-6 ${this.is_output ? "right-[-24px]" : "left-[-24px]"}`, []),
                 this.name
             ])
         ]);
@@ -248,7 +250,7 @@ class MNode_Ressource extends Component {
         } else {
             let sx = 0;
             let sy = 0;
-            append_drag_listener(this.graph.scala, this.bubble, (dx, dy, ix, iy) => {
+            append_drag_listener(this.graph.scala, this.element, (dx, dy, ix, iy) => {
                 sx += dx; sy += dy;
                 this.line.x = sx; this.line.y = - sy;
                 this.line.update_line();

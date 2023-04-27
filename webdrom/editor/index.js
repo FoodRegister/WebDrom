@@ -130,7 +130,7 @@ class ProjectComponent extends Component {
             createElement("div", {}, `w-[${left_onglet}px]`, [
                 this.createIcon( HomeProjectPage, "desktop_windows" ),
                 this.createIcon( (...a) => { throw 'TextEditorPage not developped'; }, "content_copy" ),
-                this.createIcon( MGraph, "schema" ),
+                this.createIcon( GraphEditor, "schema" ),
             ]),
             this.project_page,
             this.prompt.render()
@@ -156,3 +156,7 @@ class Project {
         this.component.prompt.addPrompt(config)
     }
 }
+
+document.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+})

@@ -64,30 +64,22 @@ const GRAPH_BACKGROUND_TILING = 45;
  * Molyb Graph-Based Editor
  */
 class MGraph extends Component {
-    constructor (parent, engine) {
+    constructor (parent) {
         super(parent);
 
         this.scale = 2;
         this.scala = new Scalar(2);
 
-        this.nodes = [ new MNode(this, "Default MNode", 200, 200, [
-            new MNode_Ressource(this, this, "Input 1", "float", "#7DAF9C"),
-            new MNode_Ressource(this, this, "Input 2", "int",   "#0A2472")
-        ], [
-            new MNode_Ressource(this, this, "Output",  "float", "#7DAF9C", true)
-        ]),
-        new MNode(this, "Default MNode", 200, 600, [
-            new MNode_Ressource(this, this, "Input 1", "float", "#7DAF9C"),
-            new MNode_Ressource(this, this, "Input 2", "int",   "#0A2472")
-        ], [
-            new MNode_Ressource(this, this, "Output",  "float", "#7DAF9C", true)
-        ]),
-        new MNode(this, "Default MNode", 600, 200, [
-            new MNode_Ressource(this, this, "Input 1", "float", "#7DAF9C"),
-            new MNode_Ressource(this, this, "Input 2", "float", "#7DAF9C")
-        ], [
-            new MNode_Ressource(this, this, "Output",  "int",   "#0A2472", true)
-        ]) ];
+        let i = 0;
+        this.nodes = [
+            MATERIAL_CATEGORY.scale_vector.as_node(this, this, 0, (i++) * 120),
+            MATERIAL_CATEGORY.scale_vector.as_node(this, this, 0, (i++) * 120),
+            MATERIAL_CATEGORY.scale_vector.as_node(this, this, 0, (i++) * 120),
+            MATERIAL_CATEGORY.const_vec1  .as_node(this, this, 0, (i++) * 120),
+            MATERIAL_CATEGORY.const_vec2  .as_node(this, this, 0, (i++) * 120),
+            MATERIAL_CATEGORY.const_vec3  .as_node(this, this, 0, (i++) * 120),
+            MATERIAL_CATEGORY.const_vec4  .as_node(this, this, 0, (i++) * 120),
+        ];
 
         this.current_ressource = undefined;
         this._first_render();
@@ -119,10 +111,11 @@ class MGraph extends Component {
     }
     _first_render () {
         this.bg_element = createElement("div", {}, "w-full h-full absolute forward-grid-background", []);
-        this.element = createElement("div", {}, "w-full h-full absolute overflow-hidden", [
+        this.element    = createElement("div", {}, "w-full h-full absolute overflow-hidden", [
             this.bg_element,
             ...(this.nodes.map((x) => x.render()))
         ]);
+        this.rel_element = createElement("div", {}, "w-full h-full relative", [ this.element ]);
 
         this.use_scale(1);
 
@@ -139,9 +132,13 @@ class MGraph extends Component {
             this.bg_element.style.left = `${ix - this.scale * 2 * GRAPH_BACKGROUND_TILING}px`;
             this.bg_element.style.top  = `${iy - this.scale * 2 * GRAPH_BACKGROUND_TILING}px`;
         });
+
+        this.element.addEventListener("contextmenu", (event) => {
+            console.log(event);
+        });
     }
     _render () {
-        return createElement("div", {}, "w-full h-full relative", [ this.element ]);
+        return this.rel_element;
     }
 }
 
@@ -263,6 +260,7 @@ class MNode_Ressource extends Component {
                 let output = this;
                 let input  = this.graph.current_ressource;
                 if (!input) return ;
+                // TODO add type validation
 
                 input.appendParent(output);
             })

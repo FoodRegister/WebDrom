@@ -59,7 +59,11 @@
     --webdrom-editor-text: #b2b2b2;
     --webdrom-editor-light-text: #d6d6d6;
 
+    --webdrom-editor-graph-background: var(--webdrom-contrast-light-background);
+    --webdrom-editor-graph-border: var(--webdrom-background);
+
     --alert-gap: var(--multiplier-4);
+    --webdrom-editor-graph-grid-size: 45px;
 
     background-color: var(--webdrom-background);
     color: var(--webdrom-editor-text);
@@ -254,6 +258,30 @@
     font-weight: 400;
     src: url(/webdrom/assets/fonts/icons.woff2) format('woff2');
 }
+
+@font-face {
+    font-family: 'VS Code Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(/webdrom/assets/fonts/code-icons.woff2) format('woff2');
+}
+
+.vscode-icons {
+    font-family: 'VS Code Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -moz-font-feature-settings: 'liga';
+    -moz-osx-font-smoothing: grayscale;
+    color: var(--webdrom-editor-icon);
+}
   
 .material-icons-outlined {
     font-family: 'Material Icons Outlined';
@@ -321,3 +349,39 @@ button.tailwind:not(.no-tailwind) {
     --duration: 100ms;
     transition: height 100ms 0s;
 }*/
+
+textarea{
+    border: none !important;
+    outline: none !important;
+    resize:none;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type=number] {
+    -moz-appearance:textfield; /* Firefox */
+}
+
+.grid-background {
+    left: calc(- var(--webdrom-editor-graph-grid-size));
+    top : calc(- var(--webdrom-editor-graph-grid-size));
+    width:  calc(100% + 4 * var(--webdrom-editor-graph-grid-size));
+    height: calc(100% + 4 * var(--webdrom-editor-graph-grid-size));
+
+    background-color: var(--webdrom-editor-graph-background);
+    background-image: linear-gradient(var(--webdrom-editor-graph-border) .1em, transparent .1em), linear-gradient(90deg, var(--webdrom-editor-graph-border) .1em, transparent .1em);
+    background-size : var(--webdrom-editor-graph-grid-size) var(--webdrom-editor-graph-grid-size);
+}
+.grid-node {
+    min-width: 300px;
+    position: absolute;
+    background-color: var(--webdrom-light-background);
+}
+.grid-node > .grid-title {
+    background-color: var(--webdrom-background);
+}

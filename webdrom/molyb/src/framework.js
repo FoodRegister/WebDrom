@@ -44,10 +44,11 @@ class Component {
         if (this.parent && this.component)
             this.parent.updateChild(this, component, this.component)
         if (this.is_dom_root && this.component && this.component != component) {
+            let body = this.dom_body ?? document.body;
             try {
-                document.body.removeChild(this.component)
+                body.removeChild(this.component)
             } catch (exception) {}
-            document.body.appendChild(component)
+            body.appendChild(component)
         }
         this.component = component;
         
@@ -135,8 +136,8 @@ function createElement (type, props={}, classes="", childrens=[]) {
     el.classList.add("tailwind");
     return el;
 }
-function createUnsafeText (text) {
-    const el = document.createElement("span")
+function createUnsafeText (text, classes="") {
+    const el = createElement("span",{}, classes, [])
     el.innerHTML = text;
     return el;
 }

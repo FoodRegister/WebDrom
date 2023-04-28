@@ -1,7 +1,9 @@
 
 class ProjectPage extends Component {
-    constructor (parent) {
+    constructor (parent, engine) {
         super(parent);
+
+        this.engine = engine;
 
         if (this.constructor == ProjectPage)
             throw "Cannot create default project page"
@@ -24,29 +26,59 @@ const TEST_MTREE_CONFIG = {
         }
     ]
 }
+const left_onglet = 60;
 
 class HomeProjectPage extends ProjectPage {
-    constructor (parent) {
-        super(parent);
+    constructor (parent, engine) {
+        super(parent, engine);
 
         this._first_render();
     }
 
     _first_render () {
-        let tree     = new MExplorer (this, { "text": "Explorer", "components": [
-            { "text": "Webdrom", "component": (parent) => new FileTree(parent).render(), "icons": []  },
+        let transform_editor = new TransformEditorComponent(this);
+        document.addEventListener("WebDrom.MeshInstance.Clicked", (event) => {
+            transform_editor.setTarget(event.meshInstance?.transform);
+        });
+
+        let tree = new MExplorer (this, { "text": "Explorer", "components": [
+            { "text": "Project", "component": (parent) => new FileTree(parent).render(), "icons": []  },
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
-            { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
+            { "text": "Level", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
         ] });
+        let property_tree = new MExplorer(this, {
+            "text": "Properties",
+            "components": [
+                { "text": "Transform", "component": (parent) => transform_editor.render() },
+                { "text": "Material", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render() },
+            ]
+        }, false)
+        let config   = undefined
+        
+        let splitter1 = new MSplitter(this, "vertical", undefined, true, 
+            this.engine.render(),
+            createElement("div", {}, "", [])
+        )
         let splitter = new MSplitter (this, "horizontal", undefined, true,
             createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
                 tree.render()
             ]),
-            createElement("div", {}, "", [])
+            splitter1.render(),
+            createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
+                property_tree.render()
+            ])
         )
-        splitter.sizes = [ 400, 0 ];
+
+        let splitter_viewport = new ViewportComponent(
+            this, splitter, left_onglet, 21
+        )
+        splitter.sizes     = [ 300, 800, 300 ];
+        splitter1.sizes    = [ 300, 300 ];
+        splitter.min_sizes = [ 200, 400, 200 ];
+        splitter.collapse  = [ true, false, true ];
+        splitter1.collapse = [ false, false ];
         this.element = createElement("div", {}, "h-full", [
-            splitter.render()
+            splitter_viewport.render()
         ])
     }
 
@@ -56,18 +88,53 @@ class HomeProjectPage extends ProjectPage {
 }
 
 class ProjectComponent extends Component {
-    constructor (parent, project_page) {
+    constructor (parent, project_page, engine) {
         super(parent);
+        this.engine = new WebEngine(this.component);
 
-        this.project_page = (new project_page(this)).render();
-        this.prompt       = new MPromptManager();
+        this.project_pages = {  }
+    
+        this.setPage(project_page, false);
+        this.prompt = new MPromptManager();
+    }
+    setPage (project_type, render = true) {
+        if (this.project_main === project_type) return ;
+
+        if (this.project_pages[project_type] === undefined)
+            this.project_pages[project_type] = (new project_type(this, this.engine)).render();
+
+        this.project_main = project_type;
+        this.project_page = this.project_pages[project_type];
+
+        if (render) this.render(false);
     }
 
+    createColorElement (condition) {
+        if (condition) return [ createElement("div", [], "absolute left-0 top-0 w-[2px] bg-Vwebdrom-editor-text h-full") ]
+        return [ ]
+    }
+    createIcon (project_type, icon) {
+        let element = createElement("div", [], "cursor-pointer p-[14px] h-15 relative", [
+            ...this.createColorElement(this.project_main === project_type),
+            createIcon(icon, "select-none icon-32")
+        ])
+
+        element.onclick = (ev) => {
+            this.setPage( project_type );
+        }
+
+        return element;
+    }
     _render () {
-        return createElement("div", {}, "flex-1", [
+        return createElement("div", {}, "flex-1 flex", [
+            createElement("div", {}, `w-[${left_onglet}px]`, [
+                this.createIcon( HomeProjectPage, "desktop_windows" ),
+                this.createIcon( (...a) => { throw 'TextEditorPage not developped'; }, "content_copy" ),
+                this.createIcon( GraphEditor, "schema" ),
+            ]),
             this.project_page,
             this.prompt.render()
-        ])
+        ]);
     }
 }
 
@@ -79,8 +146,10 @@ class Project {
 
         this.page = page;
         this.component = new ProjectComponent(undefined, page);
-
-        this.body.appendChild(this.component.render())
+        this.component.is_dom_root = true;
+        this.component.dom_body = this.body;
+        this.contextmenu = new ContextMenu(this);
+        this.body.appendChild(this.component.render());
         
         document.dispatchEvent( customEvent )
     }
@@ -89,3 +158,7 @@ class Project {
         this.component.prompt.addPrompt(config)
     }
 }
+
+document.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+})

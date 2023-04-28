@@ -150,6 +150,8 @@ class MSplitter extends Component {
     onresize (event) {
         event = event[0];
         let size = event.contentRect[this.field];
+        if (size === 0) return ;
+
         this.computeLastSize();
         let delta_size = size - this.last_size;
 
@@ -177,7 +179,7 @@ class MSplitter extends Component {
         for (let component of this.components) {
             component.style[this.field]    = `${this.sizes[idx]}px`;
             component.style[this.maxField] = `${this.sizes[idx ++]}px`;
-            component.style.overflow       = "scroll";
+            component.style.overflow       = "auto";
         }
 
         if (!this.absolute_separator) return ;

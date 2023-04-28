@@ -94,16 +94,37 @@ class MGraph_Function {
 
         return node;
     }
+    as_ctxmenu_config (callback) {
+        return {
+            "type": "action",
+            "name": this.name,
+            "action": () => callback(this)
+        }
+    }
 };
 
 class MGraph_Category {
-    constructor (sub_categories, functions) {
+    constructor (name, sub_categories, functions) {
+        this.name           = name;
         this.sub_categories = sub_categories;
         this.functions      = functions;
+    }
+    as_ctxmenu_config (callback) {
+        return {
+            "type": "category",
+            "name": this.name,
+            "childs": [
+                ...(this.sub_categories.map((x) => x.as_ctxmenu_config(callback))),
+                ...(this.functions     .map((x) => x.as_ctxmenu_config(callback)))
+            ]
+        }
     }
 }
 class MGraph_Library {
     constructor (root_category) {
         this.category = root_category;
+    }
+    as_ctxmenu_config (callback) {
+        return this.category.as_ctxmenu_config(callback).childs;
     }
 }

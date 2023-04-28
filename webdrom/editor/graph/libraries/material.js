@@ -49,6 +49,17 @@ const MATERIAL_CATEGORY = (function () {
     let const_vec3 = new MGraph_Function("3D Vector", vector_space_EMPTY, vec3.as_variant_vector_space("Vector"));
     let const_vec4 = new MGraph_Function("4D Vector", vector_space_EMPTY, vec4.as_variant_vector_space("Vector"));
 
+    let category_constants = new MGraph_Category(
+        "Constant", [], [ const_vec1, const_vec2, const_vec3, const_vec4 ]
+    );
+    let category_operands = new MGraph_Category(
+        "Operands", [], [ scale_vector ]
+    );
+
+    let root_category = new MGraph_Category(
+        "ROOT", [ category_constants, category_operands ], []
+    );
+
     return {
         types: {
             vec1: vec1,
@@ -60,11 +71,7 @@ const MATERIAL_CATEGORY = (function () {
             mat4: mat4,
             sampler2D, sampler2D
         },
-        scale_vector,
-        const_vec1,
-        const_vec2,
-        const_vec3,
-        const_vec4
+        library: new MGraph_Library(root_category)
     }
 })();
 

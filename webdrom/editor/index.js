@@ -147,6 +147,8 @@ class Project {
         this.page = page;
         this.component = new ProjectComponent(undefined, page);
         this.component.is_dom_root = true;
+        this.component.dom_body = this.body;
+        this.contextmenu = new ContextMenu(this);
         this.body.appendChild(this.component.render());
         
         document.dispatchEvent( customEvent )

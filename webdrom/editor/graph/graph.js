@@ -71,15 +71,7 @@ class MGraph extends Component {
         this.scala = new Scalar(2);
 
         let i = 0;
-        this.nodes = [
-            MATERIAL_CATEGORY.scale_vector.as_node(this, this, 0, (i++) * 120),
-            MATERIAL_CATEGORY.scale_vector.as_node(this, this, 0, (i++) * 120),
-            MATERIAL_CATEGORY.scale_vector.as_node(this, this, 0, (i++) * 120),
-            MATERIAL_CATEGORY.const_vec1  .as_node(this, this, 0, (i++) * 120),
-            MATERIAL_CATEGORY.const_vec2  .as_node(this, this, 0, (i++) * 120),
-            MATERIAL_CATEGORY.const_vec3  .as_node(this, this, 0, (i++) * 120),
-            MATERIAL_CATEGORY.const_vec4  .as_node(this, this, 0, (i++) * 120),
-        ];
+        this.nodes = [];
 
         this.current_ressource = undefined;
         this._first_render();
@@ -109,6 +101,17 @@ class MGraph extends Component {
         this.bg_element.style.backgroundImage = `linear-gradient(var(--webdrom-editor-graph-border) .${this.scale}em, transparent .${this.scale}em), linear-gradient(90deg, var(--webdrom-editor-graph-border) .${this.scale}em, transparent .${this.scale}em)`
         this.bg_element.style.backgroundSize  = `calc(${this.scale} * var(--webdrom-editor-graph-grid-size)) calc(${this.scale} * var(--webdrom-editor-graph-grid-size))`
     }
+    _recompute_element () {
+        let to_remove = [];
+        for (let child of this.element.childNodes) {
+            if (child === this.bg_element) continue ;
+            to_remove.push(child);
+        }
+
+        for (let child of to_remove) this.element.removeChild(child);
+        for (let node of this.nodes)
+            this.element.appendChild(node.render());
+    }
     _first_render () {
         this.bg_element = createElement("div", {}, "w-full h-full absolute forward-grid-background", []);
         this.element    = createElement("div", {}, "w-full h-full absolute overflow-hidden", [
@@ -119,12 +122,18 @@ class MGraph extends Component {
 
         this.use_scale(1);
 
+        this.ix = 0;
+        this.iy = 0;
+
         append_drag_listener(this.scala, this.bg_element, (dx, dy, ix, iy, modify) => {
             ix = cap(ix, - 2000, 2000); // TODO dynamic left and right border
             iy = cap(iy, - 2000, 2000); // TODO dynamic left and right border
 
             for (let node of this.nodes) node.setBackground(ix, iy);
             modify(ix, iy);
+
+            this.ix = ix;
+            this.iy = iy;
 
             ix = neg_mod(ix, this.scale * GRAPH_BACKGROUND_TILING)
             iy = neg_mod(iy, this.scale * GRAPH_BACKGROUND_TILING)
@@ -133,9 +142,21 @@ class MGraph extends Component {
             this.bg_element.style.top  = `${iy - this.scale * 2 * GRAPH_BACKGROUND_TILING}px`;
         });
 
-        this.element.addEventListener("contextmenu", (event) => {
-            console.log(event);
-        });
+        this.element.contextmenu = (event, close) => {
+            if (event.target !== this.bg_element) return ;
+            
+            let summon_x = (event.clientX - this.rel_element.getBoundingClientRect().left ) * this.scale;
+            let summon_y = (event.clientY - this.rel_element.getBoundingClientRect().top  ) * this.scale;
+            
+            let el = new SearchableContextMenu(undefined, MATERIAL_CATEGORY.library.as_ctxmenu_config((node) => {
+                this.nodes.push(node.as_node(this, this, summon_x, summon_y))
+                this._recompute_element();
+                
+                close();
+            }), "Add Node", event.clientX, event.clientY);
+
+            return el;
+        };
     }
     _render () {
         return this.rel_element;

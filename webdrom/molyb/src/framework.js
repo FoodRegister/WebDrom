@@ -44,10 +44,11 @@ class Component {
         if (this.parent && this.component)
             this.parent.updateChild(this, component, this.component)
         if (this.is_dom_root && this.component && this.component != component) {
+            let body = this.dom_body ?? document.body;
             try {
-                document.body.removeChild(this.component)
+                body.removeChild(this.component)
             } catch (exception) {}
-            document.body.appendChild(component)
+            body.appendChild(component)
         }
         this.component = component;
         
